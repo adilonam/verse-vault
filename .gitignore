@@ -115,3 +115,7 @@ cython_debug/
 .directory
 .Trash-*
 .nfs*
+
+
+
+temp/

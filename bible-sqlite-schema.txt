@@ -1,0 +1,81 @@
+CREATE TABLE "bible_version_key" (  # this has the bible id and the related table
+  "id" integer zerofill NOT NULL,
+  "table" text NOT NULL,
+  "abbreviation" text NOT NULL,
+  "language" text NOT NULL,
+  "version" text NOT NULL,
+  "info_text" text NOT NULL,
+  "info_url" text NOT NULL,
+  "publisher" text NOT NULL,
+  "copyright" text NOT NULL,
+  "copyright_info" text NOT NULL
+);
+
+CREATE TABLE "cross_reference" ( # this is not importanat 
+  "vid" integer zerofill NOT NULL,
+  "r" integer NOT NULL,
+  "sv" integer zerofill NOT NULL,
+  "ev" integer zerofill NOT NULL
+);
+
+CREATE TABLE "key_english" ( # this has the book name
+  "b" integer NOT NULL,
+  "n" text NOT NULL
+);
+
+# this tables are related to table bible_version_key
+CREATE TABLE "t_asv" (  
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_bbe" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_dby" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_kjv" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_wbt" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_web" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
+
+CREATE TABLE "t_ylt" (
+  "id" integer zerofill NOT NULL,
+  "b" integer NOT NULL,
+  "c" integer NOT NULL,
+  "v" integer NOT NULL,
+  "t" text NOT NULL
+);
