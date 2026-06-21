@@ -58,6 +58,7 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+bible-sqlite.db
 instance/
 .webassets-cache
 .scrapy
@@ -115,3 +116,7 @@ cython_debug/
 .directory
 .Trash-*
 .nfs*
+
+
+
+temp/

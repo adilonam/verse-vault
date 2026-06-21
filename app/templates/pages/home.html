@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import nav_icon %}
+
+{% block title %}Verse Vault{% endblock %}
+
+{% block body %}
+  <div class="dashboard">
+    <div class="bible-version-bar">
+      <span class="bible-version-bar__abbrev">{{ bible_version.abbreviation }}</span>
+      <span class="bible-version-bar__name">{{ bible_version.version }}</span>
+    </div>
+
+    <header class="top-bar">
+      <div class="progress-section">
+        <div class="progress-meta">
+          <span class="label">{{ page.progress.label }}</span>
+          <span class="progress-percent">{{ page.progress.percent }}%</span>
+        </div>
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-valuenow="{{ page.progress.percent }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div
+            class="progress-fill"
+            style="width: {{ page.progress.percent }}%"
+          ></div>
+        </div>
+      </div>
+      <time class="clock">{{ page.time }}</time>
+    </header>
+
+    <main class="main-grid">
+      <section class="nav-panel">
+        <h2 class="section-label">{{ page.nav_label }}</h2>
+        <nav class="nav-list" aria-label="Main navigation">
+          {% for item in page.nav_items %}
+            <a
+              href="#"
+              class="nav-card{% if item.active %} nav-card--active{% endif %}"
+              aria-current="{{ 'page' if item.active else 'false' }}"
+            >
+              <span class="nav-card__icon">{{ nav_icon(item.icon) }}</span>
+              <span class="nav-card__text">
+                <span class="nav-card__title">{{ item.title }}</span>
+                <span class="nav-card__subtitle">{{ item.subtitle }}</span>
+              </span>
+              {% if item.active %}
+                <span class="nav-card__indicator" aria-hidden="true"></span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </nav>
+      </section>
+
+      <section class="verse-panel">
+        <h2 class="section-label">{{ page.verse_of_day.label }}</h2>
+        <blockquote class="verse-quote">
+          <p>&ldquo;{{ page.verse_of_day.text }}&rdquo;</p>
+        </blockquote>
+        <footer class="verse-citation">
+          <cite>{{ page.verse_of_day.reference }}</cite>
+          <span>{{ page.verse_of_day.version }}</span>
+        </footer>
+      </section>
+    </main>
+
+    <footer class="date-footer">
+      <time>{{ page.date }}</time>
+    </footer>
+  </div>
+{% endblock %}

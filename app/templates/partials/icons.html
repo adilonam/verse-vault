@@ -1,0 +1,23 @@
+{% macro nav_icon(name) -%}
+  {% if name == "play" %}
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 8.5v7l6-3.5-6-3.5z" />
+    </svg>
+  {% elif name == "book" %}
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H18v18H7.5A2.5 2.5 0 0 1 5 17.5V4.5z" />
+      <path d="M7.5 2A2.5 2.5 0 0 0 5 4.5V17.5A2.5 2.5 0 0 0 7.5 20H18" />
+    </svg>
+  {% elif name == "notes" %}
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 3h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2z" />
+      <path d="M9 8h6M9 12h6" />
+    </svg>
+  {% elif name == "collections" %}
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6h5v14H4zM10 6h5v14h-5zM16 6h5v14h-5z" />
+      <path d="M4 6V4h17v2" />
+    </svg>
+  {% endif %}
+{%- endmacro %}
