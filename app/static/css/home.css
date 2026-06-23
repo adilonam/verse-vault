@@ -267,6 +267,26 @@ body {
   color: var(--text-muted);
 }
 
+.reset-btn:hover {
+  color: var(--gold-soft);
+  border-color: var(--border-strong);
+}
+
+.reset-form {
+  margin-top: 0.75rem;
+}
+
+.reset-btn {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
 .date-footer {
   margin-top: 2rem;
   text-align: center;

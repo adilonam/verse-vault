@@ -1,0 +1,29 @@
+{% macro top_nav(active, bible_version, header_label=None) %}
+  <header class="app-header">
+    <nav class="app-tabs" aria-label="Main navigation">
+      <a
+        href="/"
+        class="app-tab{% if active == 'home' %} app-tab--active{% endif %}"
+        {% if active == 'home' %}aria-current="page"{% endif %}
+      >
+        Home
+      </a>
+      <a
+        href="/bible"
+        class="app-tab{% if active == 'bible' %} app-tab--active{% endif %}"
+        {% if active == 'bible' %}aria-current="page"{% endif %}
+      >
+        Bible
+      </a>
+      <a href="#" class="app-tab">Notes</a>
+      <a href="#" class="app-tab">Collections</a>
+    </nav>
+    <div class="app-header__meta">
+      {% if header_label %}
+        <span>{{ header_label }}</span>
+      {% else %}
+        <span>Bible · {{ bible_version.abbreviation }}</span>
+      {% endif %}
+    </div>
+  </header>
+{% endmacro %}

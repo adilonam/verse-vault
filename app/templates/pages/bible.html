@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+
+{% block title %}Bible · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("bible", bible_version) }}
+
+    <div class="bible-toolbar">
+      <label class="search-field">
+        <span class="visually-hidden">Search books or passages</span>
+        <input
+          type="search"
+          placeholder="John 3:16 · Romans 8 · Psalms..."
+          class="search-input"
+        />
+      </label>
+      <div class="filter-group" role="group" aria-label="Testament filter">
+        <a
+          href="/bible"
+          class="filter-btn{% if testament == 'all' %} filter-btn--active{% endif %}"
+        >ALL</a>
+        <a
+          href="/bible?testament=old"
+          class="filter-btn{% if testament == 'old' %} filter-btn--active{% endif %}"
+        >OLD TEST.</a>
+        <a
+          href="/bible?testament=new"
+          class="filter-btn{% if testament == 'new' %} filter-btn--active{% endif %}"
+        >NEW TEST.</a>
+      </div>
+    </div>
+
+    <main class="book-grid">
+      {% for book in books %}
+        <a
+          href="/continue?book={{ book.id }}"
+          class="book-card"
+        >
+          <div class="book-card__head">
+            <h2 class="book-card__title">{{ book.name }}</h2>
+            <span class="book-card__tag">{{ book.testament }}</span>
+          </div>
+          <div class="book-card__progress">
+            <div
+              class="book-card__bar"
+              role="progressbar"
+              aria-valuenow="{{ book.progress_percent }}"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div
+                class="book-card__fill"
+                style="width: {{ book.progress_percent }}%"
+              ></div>
+            </div>
+          </div>
+          <div class="book-card__foot">
+            <span>{{ book.chapter_count }} chapters</span>
+            <span>{{ book.progress_percent }}%</span>
+          </div>
+        </a>
+      {% endfor %}
+    </main>
+  </div>
+{% endblock %}

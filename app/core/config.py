@@ -18,6 +18,10 @@ class Settings:
     database_path: Path = Path(
         os.getenv("DATABASE_PATH", str(_project_dir / "bible-sqlite.db"))
     )
+    database_url: str = os.getenv(
+        "DATABASE_URL",
+        f"sqlite:///{database_path.resolve()}",
+    )
     bible_version_id: int = int(os.getenv("BIBLE_VERSION_ID", "4"))
 
 
