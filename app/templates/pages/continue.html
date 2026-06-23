@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+
+{% block title %}{{ book_name }} {{ chapter }} · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell app-shell--reader">
+    {{ top_nav("bible", bible_version, book_name ~ " " ~ chapter ~ " · " ~ bible_version.abbreviation) }}
+
+    <main class="reader-layout">
+      <section class="reader-panel">
+        <header class="reader-header">
+          <h1 class="reader-title">{{ book_name }} {{ chapter }}:1–{{ verses[-1].number if verses else 1 }}</h1>
+          {% if section_title %}
+            <p class="reader-subtitle">{{ section_title }}</p>
+          {% endif %}
+        </header>
+
+        <div
+          class="reader-text"
+          data-book-id="{{ book_id }}"
+          data-chapter="{{ chapter }}"
+        >
+          {% for verse in verses %}
+            <p
+              class="verse-line{% if verse.number == current_verse %} verse-line--current{% endif %}"
+              data-verse="{{ verse.number }}"
+            >
+              <sup class="verse-num">{{ verse.number }}</sup>
+              {{ verse.text }}
+            </p>
+          {% endfor %}
+        </div>
+
+        <nav class="chapter-nav" aria-label="Chapter navigation">
+          {% if prev_chapter %}
+            <a
+              href="/continue?book={{ book_id }}&chapter={{ prev_chapter }}"
+              class="chapter-nav__btn"
+            >&lt; Previous</a>
+          {% else %}
+            <span class="chapter-nav__btn chapter-nav__btn--disabled">&lt; Previous</span>
+          {% endif %}
+          {% if next_chapter %}
+            <a
+              href="/continue?book={{ book_id }}&chapter={{ next_chapter }}"
+              class="chapter-nav__btn"
+            >Next &gt;</a>
+          {% else %}
+            <span class="chapter-nav__btn chapter-nav__btn--disabled">Next &gt;</span>
+          {% endif %}
+        </nav>
+      </section>
+
+      <section class="notes-panel">
+        <input type="text" class="notes-input notes-input--title" placeholder="Title" />
+        <textarea
+          class="notes-input notes-input--body"
+          placeholder="Write your thoughts, reflections, or questions about this passage..."
+        ></textarea>
+        <div class="notes-actions">
+          <button type="button" class="notes-btn">Save</button>
+          <button type="button" class="notes-btn">Add to Collection</button>
+          <button type="button" class="notes-btn notes-btn--danger">Delete</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{{ url_for('static', path='js/reader.js') }}" defer></script>
+{% endblock %}

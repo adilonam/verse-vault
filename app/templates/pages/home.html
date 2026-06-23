@@ -28,6 +28,9 @@
             style="width: {{ page.progress.percent }}%"
           ></div>
         </div>
+        <form action="/reset-reading" method="post" class="reset-form">
+          <button type="submit" class="reset-btn">Reset reading progress</button>
+        </form>
       </div>
       <time class="clock">{{ page.time }}</time>
     </header>
@@ -38,7 +41,7 @@
         <nav class="nav-list" aria-label="Main navigation">
           {% for item in page.nav_items %}
             <a
-              href="#"
+              href="{{ item.href }}"
               class="nav-card{% if item.active %} nav-card--active{% endif %}"
               aria-current="{{ 'page' if item.active else 'false' }}"
             >
