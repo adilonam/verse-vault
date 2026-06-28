@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import ui_icon %}
+
+{% block title %}New Collection · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/collections.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("collections", bible_version, header_label="New Collection", header_icon="collections") }}
+
+    <main class="collection-form-wrap">
+      <form class="collection-form" method="post" action="/collections/new">
+        <div class="form-field">
+          <label class="form-label" for="name">Name</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            class="form-input"
+            placeholder="e.g. Promises of God"
+            value="{{ form.name }}"
+            required
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-textarea"
+            rows="3"
+            placeholder="What is this collection about?"
+          >{{ form.description }}</textarea>
+        </div>
+
+        <fieldset class="form-field form-field--color">
+          <legend class="form-label">Color</legend>
+          <div class="color-options">
+            {% for color in colors %}
+              <label class="color-option{% if form.color == color.id %} color-option--selected{% endif %}">
+                <input
+                  type="radio"
+                  name="color"
+                  value="{{ color.id }}"
+                  class="color-option__input"
+                  {% if form.color == color.id %}checked{% endif %}
+                />
+                <span class="color-option__swatch color-option__swatch--{{ color.id }}"></span>
+                <span class="color-option__label">{{ color.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="form-field">
+          <label class="form-label" for="verse-input">Verses</label>
+          <div class="verse-input-row">
+            <span class="verse-input-row__icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+            <input
+              id="verse-input"
+              type="text"
+              class="form-input verse-input-row__input"
+              placeholder="John 3:16"
+            />
+            <button type="button" class="verse-add-btn" id="verse-add-btn">Add</button>
+          </div>
+          <div class="verse-tags" id="verse-tags">
+            {% for ref in form.verse_refs %}
+              <span class="verse-tag" data-ref="{{ ref }}">
+                <span class="verse-tag__plus">+</span> {{ ref }}
+                <button type="button" class="verse-tag__remove" aria-label="Remove {{ ref }}">&times;</button>
+                <input type="hidden" name="verse_refs" value="{{ ref }}" />
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="form-field form-field--notes">
+          <div class="form-field__row">
+            <span class="form-label">Notes</span>
+            <button type="button" class="notes-add-btn">+ Add Note</button>
+          </div>
+        </div>
+
+        <button type="submit" class="collection-submit-btn" id="collection-submit">
+          <span aria-hidden="true">&gt;</span> Create Collection
+        </button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const nameInput = document.getElementById("name");
+      const submitBtn = document.getElementById("collection-submit");
+      const verseInput = document.getElementById("verse-input");
+      const verseAddBtn = document.getElementById("verse-add-btn");
+      const verseTags = document.getElementById("verse-tags");
+      const colorOptions = document.querySelectorAll(".color-option");
+
+      function updateSubmitState() {
+        submitBtn.disabled = !nameInput.value.trim();
+      }
+
+      function addVerseTag(reference) {
+        const ref = reference.trim();
+        if (!ref) return;
+
+        const existing = Array.from(
+          verseTags.querySelectorAll('input[name="verse_refs"]')
+        ).some((input) => input.value === ref);
+        if (existing) return;
+
+        const tag = document.createElement("span");
+        tag.className = "verse-tag";
+        tag.dataset.ref = ref;
+        tag.innerHTML =
+          '<span class="verse-tag__plus">+</span> ' +
+          ref +
+          ' <button type="button" class="verse-tag__remove" aria-label="Remove ' +
+          ref +
+          '">&times;</button>';
+        const hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "verse_refs";
+        hidden.value = ref;
+        tag.appendChild(hidden);
+        verseTags.appendChild(tag);
+      }
+
+      verseTags.addEventListener("click", function (event) {
+        const target = event.target;
+        if (target.classList.contains("verse-tag__remove")) {
+          target.closest(".verse-tag").remove();
+        }
+      });
+
+      verseAddBtn.addEventListener("click", function () {
+        addVerseTag(verseInput.value);
+        verseInput.value = "";
+        verseInput.focus();
+      });
+
+      verseInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          addVerseTag(verseInput.value);
+          verseInput.value = "";
+        }
+      });
+
+      nameInput.addEventListener("input", updateSubmitState);
+      updateSubmitState();
+
+      colorOptions.forEach(function (option) {
+        option.addEventListener("change", function () {
+          colorOptions.forEach(function (item) {
+            item.classList.toggle(
+              "color-option--selected",
+              item.querySelector(".color-option__input").checked
+            );
+          });
+        });
+      });
+    })();
+  </script>
+{% endblock %}

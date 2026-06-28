@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import nav_icon, ui_icon %}
+
+{% block title %}Collections · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/collections.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("collections", bible_version, header_label="Collections", header_icon="collections") }}
+
+    <div class="collections-toolbar">
+      <label class="search-field search-field--with-icon">
+        <span class="search-field__icon" aria-hidden="true">{{ ui_icon("search") }}</span>
+        <span class="visually-hidden">Search collections</span>
+        <input
+          type="search"
+          placeholder="Search collections..."
+          class="search-input"
+        />
+      </label>
+      <a href="/collections/new" class="collections-add-btn" aria-label="Add collection">
+        {{ ui_icon("plus-square") }}
+      </a>
+      <span class="collections-count">
+        {{ collection_count }} collection{{ "s" if collection_count != 1 else "" }}
+      </span>
+    </div>
+
+    <main class="collections-list">
+      {% for collection in collections %}
+        <article class="collection-card">
+          <div class="collection-card__icon collection-card__icon--{{ collection.color }}" aria-hidden="true">
+            {{ nav_icon("collections") }}
+          </div>
+          <div class="collection-card__body">
+            <div class="collection-card__head">
+              <h2 class="collection-card__title">{{ collection.name }}</h2>
+              <span class="collection-card__count">
+                {{ collection.verse_count }} verse{{ "s" if collection.verse_count != 1 else "" }}
+              </span>
+            </div>
+            <p class="collection-card__description">{{ collection.description }}</p>
+            {% if collection.verse_refs %}
+              <div class="collection-card__tags">
+                {% for ref in collection.verse_refs %}
+                  <span class="collection-card__tag">
+                    <span class="collection-card__tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                    {{ ref }}
+                  </span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          <a href="/collections/{{ collection.id }}" class="collection-card__detail-btn">
+            <span class="collection-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
+            View details
+          </a>
+        </article>
+      {% endfor %}
+    </main>
+  </div>
+{% endblock %}

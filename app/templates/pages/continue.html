@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import ui_icon %}
 
 {% block title %}{{ book_name }} {{ chapter }} · Verse Vault{% endblock %}
 
@@ -56,19 +57,73 @@
         </nav>
       </section>
 
-      <section class="notes-panel">
-        <input type="text" class="notes-input notes-input--title" placeholder="Title" />
+      <div
+        class="reader-resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize panels"
+        aria-valuemin="25"
+        aria-valuemax="75"
+        aria-valuenow="50"
+        tabindex="0"
+      >
+        <button type="button" class="reader-resizer__btn" aria-hidden="true" tabindex="-1">
+          {{ ui_icon("grip-vertical") }}
+        </button>
+      </div>
+
+      <section
+        class="notes-panel"
+        data-book-id="{{ book_id }}"
+        data-chapter="{{ chapter }}"
+        data-verse="{{ current_verse }}"
+      >
+        <input
+          type="text"
+          id="note-title"
+          name="title"
+          class="notes-input notes-input--title"
+          placeholder="Title"
+        />
         <textarea
+          id="note-body"
+          name="body"
           class="notes-input notes-input--body"
           placeholder="Write your thoughts, reflections, or questions about this passage..."
         ></textarea>
         <div class="notes-actions">
-          <button type="button" class="notes-btn">Save</button>
-          <button type="button" class="notes-btn">Add to Collection</button>
-          <button type="button" class="notes-btn notes-btn--danger">Delete</button>
+          <button type="button" class="notes-btn" id="note-save-btn">Save</button>
+          <button type="button" class="notes-btn" id="note-collection-btn">Add to Collection</button>
+          <button type="button" class="notes-btn notes-btn--danger" id="note-delete-btn">Delete</button>
         </div>
       </section>
     </main>
   </div>
+
+  <div class="collection-modal" id="collection-modal" hidden>
+    <div class="collection-modal__backdrop" id="collection-modal-backdrop"></div>
+    <div
+      class="collection-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="collection-modal-title"
+    >
+      <header class="collection-modal__header">
+        <span class="collection-modal__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 7V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
+          </svg>
+        </span>
+        <h2 class="collection-modal__title" id="collection-modal-title">Add to Collection</h2>
+      </header>
+      <ul class="collection-modal__list" id="collection-modal-list"></ul>
+      <button type="button" class="collection-modal__cancel" id="collection-modal-cancel">
+        Cancel
+      </button>
+    </div>
+  </div>
+
   <script src="{{ url_for('static', path='js/reader.js') }}" defer></script>
+  <script src="{{ url_for('static', path='js/reader-resizer.js') }}" defer></script>
+  <script src="{{ url_for('static', path='js/notes-panel.js') }}" defer></script>
 {% endblock %}

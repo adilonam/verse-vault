@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import ui_icon %}
+
+{% block title %}{{ note.title }} · Notes · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/collections.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/notes.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("notes", bible_version, header_label="Notes", header_icon="notes") }}
+
+    <main
+      class="note-detail note-detail--view"
+      id="note-detail"
+      data-note-id="{{ note.id }}"
+      data-mode="view"
+    >
+      <div class="note-detail__toolbar">
+        <a href="/notes" class="note-detail__back">
+          <span class="note-detail__back-icon" aria-hidden="true">{{ ui_icon("arrow-left") }}</span>
+          Back to Notes
+        </a>
+        <button type="button" class="note-detail__edit-btn" id="edit-toggle-btn">
+          Edit
+        </button>
+      </div>
+
+      <article class="note-detail__panel">
+        <div class="note-detail__view" id="note-view">
+          <header class="note-detail__head">
+            <h1 class="note-detail__title" id="note-title">{{ note.title }}</h1>
+            <time class="note-detail__date" id="note-date" datetime="{{ note.created_at.isoformat() }}">
+              {{ note.date_label }}
+            </time>
+          </header>
+          <div class="note-detail__body" id="note-body">{{ note.body }}</div>
+          <div class="note-detail__ref" id="note-ref-view">
+            {% if note.book_id is not none and note.chapter is not none and note.verse is not none %}
+              <a
+                href="/continue?book={{ note.book_id }}&chapter={{ note.chapter }}&verse={{ note.verse }}"
+                class="note-detail__tag note-detail__tag--linked"
+                id="note-ref-link"
+              >
+                <span class="note-detail__tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                <span id="note-ref-text">{{ note.scripture_reference }}</span>
+              </a>
+            {% else %}
+              <span class="note-detail__tag" id="note-ref-link">
+                <span class="note-detail__tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                <span id="note-ref-text">{{ note.scripture_reference }}</span>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <form class="note-detail__edit-form" id="note-edit-form" hidden>
+          <div class="form-field">
+            <label class="form-label" for="edit-title">Title</label>
+            <input
+              id="edit-title"
+              type="text"
+              class="form-input"
+              value="{{ note.title }}"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="edit-body">Body</label>
+            <textarea
+              id="edit-body"
+              class="form-textarea"
+              rows="8"
+              required
+            >{{ note.body }}</textarea>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="edit-reference">Verse reference</label>
+            <div class="verse-input-row">
+              <span class="verse-input-row__icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+              <input
+                id="edit-reference"
+                type="text"
+                class="form-input verse-input-row__input"
+                value="{{ note.scripture_reference }}"
+                placeholder="John 3:16"
+                required
+              />
+            </div>
+          </div>
+          <div class="note-detail__edit-actions">
+            <button type="button" class="note-detail__cancel-btn" id="edit-cancel-btn">
+              Cancel
+            </button>
+            <button type="submit" class="note-detail__save-btn" id="edit-save-btn">
+              Save
+            </button>
+          </div>
+        </form>
+      </article>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', path='js/note-detail.js') }}"></script>
+{% endblock %}

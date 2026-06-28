@@ -43,6 +43,15 @@
     saveTimer = setTimeout(savePosition, 200);
   }
 
+  function dispatchVerseChange() {
+    const verse = Number(verses[currentIndex].dataset.verse);
+    document.dispatchEvent(
+      new CustomEvent("verse-change", {
+        detail: { bookId, chapter, verse },
+      })
+    );
+  }
+
   function selectVerse(index) {
     if (index < 0 || index >= verses.length || index === currentIndex) return;
 
@@ -58,6 +67,7 @@
 
     scrollToCurrent();
     queueSave();
+    dispatchVerseChange();
   }
 
   verses.forEach((verse, index) => {
@@ -88,4 +98,5 @@
   updateTabIndices();
   verses[currentIndex].focus({ preventScroll: true });
   scrollToCurrent();
+  dispatchVerseChange();
 })();
