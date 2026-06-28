@@ -93,3 +93,50 @@ CREATE TABLE book_progress (
   last_chapter INTEGER NOT NULL DEFAULT 1,
   last_verse INTEGER NOT NULL DEFAULT 1
 );
+
+CREATE TABLE verse_refs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  book_id INTEGER NOT NULL,
+  chapter INTEGER NOT NULL,
+  verse INTEGER NOT NULL,
+  reference TEXT NOT NULL,
+  UNIQUE (book_id, chapter, verse)
+);
+
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  scripture_reference TEXT NOT NULL,
+  verse_ref_id INTEGER REFERENCES verse_refs(id) ON DELETE SET NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
+);
+
+CREATE TABLE collections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  color TEXT NOT NULL DEFAULT 'gold',
+  verse_count INTEGER NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
+);
+
+CREATE TABLE collection_verse_refs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  verse_ref_id INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  FOREIGN KEY (verse_ref_id) REFERENCES verse_refs(id) ON DELETE CASCADE,
+  UNIQUE (collection_id, verse_ref_id)
+);
+
+CREATE TABLE collection_notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  note_id INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
+  UNIQUE (collection_id, note_id)
+);

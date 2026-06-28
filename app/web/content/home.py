@@ -1,5 +1,8 @@
 from typing import TypedDict
 
+from sqlalchemy.orm import Session
+
+from app.db.bible import get_verse_of_day
 from app.db.models.bible import BibleVersionKey
 
 
@@ -33,26 +36,22 @@ class HomePage(TypedDict):
     verse_of_day: VerseOfDay
 
 
-VERSE_OF_DAY: VerseOfDay = {
-    "label": "VERSE OF THE DAY",
-    "text": (
-        "For I know the plans I have for you, declares the Lord, "
-        "plans to prosper you and not to harm you, plans to give you "
-        "hope and a future."
-    ),
-    "reference": "Jeremiah 29:11",
-    "version": "",
-}
+VERSE_OF_DAY_LABEL = "VERSE OF THE DAY"
 
 
 def build_home_page(
     *,
+    db: Session,
     bible_version: BibleVersionKey,
     continue_book: str,
     continue_chapter: int,
     continue_verse: int,
     progress_percent: int,
+    note_count: int,
+    collection_count: int,
 ) -> HomePage:
+    text, reference = get_verse_of_day(db, bible_version.table)
+
     return {
         "progress": {
             "label": "VERSES ANALYZED",
@@ -81,22 +80,27 @@ def build_home_page(
             {
                 "id": "notes",
                 "title": "Notes",
-                "subtitle": "14 saved notes",
+                "subtitle": f"{note_count} saved note{'s' if note_count != 1 else ''}",
                 "icon": "notes",
                 "active": False,
-                "href": "#",
+                "href": "/notes",
             },
             {
                 "id": "collections",
                 "title": "Collections",
-                "subtitle": "3 collections",
+                "subtitle": (
+                    f"{collection_count} collection"
+                    f"{'s' if collection_count != 1 else ''}"
+                ),
                 "icon": "collections",
                 "active": False,
-                "href": "#",
+                "href": "/collections",
             },
         ],
         "verse_of_day": {
-            **VERSE_OF_DAY,
+            "label": VERSE_OF_DAY_LABEL,
+            "text": text,
+            "reference": reference,
             "version": bible_version.abbreviation,
         },
     }

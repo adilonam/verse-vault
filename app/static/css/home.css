@@ -9,7 +9,7 @@
   --text: rgba(235, 220, 190, 0.92);
   --text-muted: rgba(201, 169, 98, 0.55);
   --font-ui: "Inter", system-ui, sans-serif;
-  --font-verse: "Cormorant Garamond", "Times New Roman", serif;
+  --font-verse: "Lora", "Times New Roman", serif;
 }
 
 *,
@@ -35,7 +35,7 @@ body {
   min-height: 100vh;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
-  padding: 2.5rem 3rem 2rem;
+  padding: 1.5rem 2rem 2rem;
 }
 
 .bible-version-bar {
@@ -83,7 +83,8 @@ body {
 }
 
 .progress-section {
-  max-width: 42rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .progress-meta {

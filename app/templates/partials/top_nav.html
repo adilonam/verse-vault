@@ -1,4 +1,6 @@
-{% macro top_nav(active, bible_version, header_label=None) %}
+{% from "partials/icons.html" import nav_icon %}
+
+{% macro top_nav(active, bible_version, header_label=None, header_icon=None) %}
   <header class="app-header">
     <nav class="app-tabs" aria-label="Main navigation">
       <a
@@ -6,6 +8,7 @@
         class="app-tab{% if active == 'home' %} app-tab--active{% endif %}"
         {% if active == 'home' %}aria-current="page"{% endif %}
       >
+        <span class="app-tab__icon">{{ nav_icon("book") }}</span>
         Home
       </a>
       <a
@@ -13,13 +16,31 @@
         class="app-tab{% if active == 'bible' %} app-tab--active{% endif %}"
         {% if active == 'bible' %}aria-current="page"{% endif %}
       >
+        <span class="app-tab__icon">{{ nav_icon("book") }}</span>
         Bible
       </a>
-      <a href="#" class="app-tab">Notes</a>
-      <a href="#" class="app-tab">Collections</a>
+      <a
+        href="/notes"
+        class="app-tab{% if active == 'notes' %} app-tab--active{% endif %}"
+        {% if active == 'notes' %}aria-current="page"{% endif %}
+      >
+        <span class="app-tab__icon">{{ nav_icon("notes") }}</span>
+        Notes
+      </a>
+      <a
+        href="/collections"
+        class="app-tab{% if active == 'collections' %} app-tab--active{% endif %}"
+        {% if active == 'collections' %}aria-current="page"{% endif %}
+      >
+        <span class="app-tab__icon">{{ nav_icon("collections") }}</span>
+        Collections
+      </a>
     </nav>
-    <div class="app-header__meta">
-      {% if header_label %}
+    <div class="app-header__meta{% if header_icon %} app-header__meta--icon{% endif %}">
+      {% if header_icon %}
+        <span aria-hidden="true">{{ nav_icon(header_icon) }}</span>
+        <span>{{ header_label or "Notes" }}</span>
+      {% elif header_label %}
         <span>{{ header_label }}</span>
       {% else %}
         <span>Bible · {{ bible_version.abbreviation }}</span>

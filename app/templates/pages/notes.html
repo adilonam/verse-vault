@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import nav_icon, ui_icon %}
+
+{% block title %}Notes · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/notes.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("notes", bible_version, header_label="Notes", header_icon="notes") }}
+
+    <div class="notes-toolbar">
+      <label class="search-field">
+        <span class="visually-hidden">Search notes</span>
+        <input
+          type="search"
+          placeholder="Search notes..."
+          class="search-input"
+        />
+      </label>
+      <span class="notes-count">{{ note_count }} note{{ "s" if note_count != 1 else "" }}</span>
+    </div>
+
+    <main class="notes-list">
+      {% for note in notes %}
+        <article class="note-card">
+          <div class="note-card__body">
+            <div class="note-card__head">
+              <h2 class="note-card__title">{{ note.title }}</h2>
+              <time class="note-card__date" datetime="{{ note.created_at.isoformat() }}">
+                {{ note.date_label }}
+              </time>
+            </div>
+            <p class="note-card__preview">{{ note.body }}</p>
+            {% if note.book_id is not none and note.chapter is not none and note.verse is not none %}
+              <a
+                href="/continue?book={{ note.book_id }}&chapter={{ note.chapter }}&verse={{ note.verse }}"
+                class="note-card__tag"
+              >
+                {{ note.scripture_reference }}
+              </a>
+            {% else %}
+              <span class="note-card__tag">{{ note.scripture_reference }}</span>
+            {% endif %}
+          </div>
+          <a href="/notes/{{ note.id }}" class="note-card__detail-btn">
+            <span class="note-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
+            View details
+          </a>
+        </article>
+      {% endfor %}
+    </main>
+  </div>
+{% endblock %}

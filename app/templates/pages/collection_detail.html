@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import nav_icon, ui_icon %}
+
+{% block title %}{{ collection.name }} · Collections · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/collections.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/notes.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("collections", bible_version, header_label="Collections", header_icon="collections") }}
+
+    <main
+      class="collection-detail collection-detail--view"
+      id="collection-detail"
+      data-collection-id="{{ collection.id }}"
+      data-mode="view"
+    >
+      <div class="collection-detail__toolbar">
+        <a href="/collections" class="collection-detail__back">
+          <span class="collection-detail__back-icon" aria-hidden="true">{{ ui_icon("arrow-left") }}</span>
+          Back to Collections
+        </a>
+        <button type="button" class="collection-detail__edit-btn" id="edit-toggle-btn">
+          Edit
+        </button>
+      </div>
+
+      <header class="collection-detail__header" id="collection-header">
+        <div
+          class="collection-detail__icon collection-detail__icon--{{ collection.color }}"
+          id="collection-icon"
+          aria-hidden="true"
+        >
+          {{ nav_icon("collections") }}
+        </div>
+        <div class="collection-detail__intro">
+          <div class="collection-detail__view" id="collection-view">
+            <h1 class="collection-detail__title" id="collection-title">{{ collection.name }}</h1>
+            <p
+              class="collection-detail__description{% if not collection.description %} collection-detail__description--empty{% endif %}"
+              id="collection-description"
+            >
+              {% if collection.description %}
+                {{ collection.description }}
+              {% else %}
+                No description
+              {% endif %}
+            </p>
+          </div>
+
+          <form class="collection-detail__edit-form" id="collection-edit-form" hidden>
+            <div class="form-field">
+              <label class="form-label" for="edit-name">Name</label>
+              <input
+                id="edit-name"
+                type="text"
+                class="form-input"
+                value="{{ collection.name }}"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="edit-description">Description</label>
+              <textarea
+                id="edit-description"
+                class="form-textarea"
+                rows="2"
+              >{{ collection.description }}</textarea>
+            </div>
+            <fieldset class="form-field form-field--color">
+              <legend class="form-label">Color</legend>
+              <div class="color-options" id="edit-color-options">
+                {% for color in colors %}
+                  <label class="color-option{% if collection.color == color.id %} color-option--selected{% endif %}">
+                    <input
+                      type="radio"
+                      name="edit-color"
+                      value="{{ color.id }}"
+                      class="color-option__input"
+                      {% if collection.color == color.id %}checked{% endif %}
+                    />
+                    <span class="color-option__swatch color-option__swatch--{{ color.id }}"></span>
+                    <span class="color-option__label">{{ color.label }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </fieldset>
+            <div class="collection-detail__edit-actions">
+              <button type="button" class="collection-detail__cancel-btn" id="edit-cancel-btn">
+                Cancel
+              </button>
+              <button type="submit" class="collection-detail__save-btn" id="edit-save-btn">
+                Save
+              </button>
+            </div>
+          </form>
+
+          <div class="collection-detail__stats">
+            <span class="collection-detail__stat">
+              <span class="collection-detail__stat-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+              <span id="verse-count-label">
+                {{ collection.verse_count }} verse{{ "s" if collection.verse_count != 1 else "" }}
+              </span>
+            </span>
+            <span class="collection-detail__stat">
+              <span class="collection-detail__stat-icon" aria-hidden="true">{{ ui_icon("notes") }}</span>
+              <span id="note-count-label">
+                {{ collection.notes|length }} note{{ "s" if collection.notes|length != 1 else "" }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <section class="collection-detail__section" aria-labelledby="verses-heading">
+        <div class="collection-detail__section-head">
+          <h2 id="verses-heading" class="collection-detail__section-title">
+            <span class="collection-detail__section-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+            Verses
+          </h2>
+        </div>
+        <div class="collection-detail__panel">
+          <div class="collection-detail__verse-tags" id="verse-tags">
+            {% for ref in collection.verse_refs %}
+              <span
+                class="collection-detail__verse-tag collection-detail__verse-tag--linked"
+                data-verse-ref-id="{{ ref.verse_ref_id }}"
+                data-book-id="{{ ref.book_id }}"
+                data-chapter="{{ ref.chapter }}"
+                data-verse="{{ ref.verse }}"
+              >
+                <a
+                  href="/continue?book={{ ref.book_id }}&chapter={{ ref.chapter }}&verse={{ ref.verse }}"
+                  class="collection-detail__verse-tag-link"
+                >
+                  <span class="collection-detail__verse-tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                  {{ ref.reference }}
+                </a>
+                <button
+                  type="button"
+                  class="collection-detail__verse-remove"
+                  aria-label="Remove {{ ref.reference }}"
+                  hidden
+                >&times;</button>
+              </span>
+            {% endfor %}
+          </div>
+          <p
+            class="collection-detail__empty"
+            id="verses-empty"
+            {% if collection.verse_refs %}hidden{% endif %}
+          >
+            No verses linked to this collection yet.
+          </p>
+          <div class="collection-detail__add-row" id="verse-add-row" hidden>
+            <div class="verse-input-row">
+              <span class="verse-input-row__icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+              <input
+                id="verse-input"
+                type="text"
+                class="form-input verse-input-row__input"
+                placeholder="John 3:16"
+              />
+              <button type="button" class="verse-add-btn" id="verse-add-btn">Add</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="collection-detail__section" aria-labelledby="notes-heading">
+        <div class="collection-detail__section-head">
+          <h2 id="notes-heading" class="collection-detail__section-title">
+            <span class="collection-detail__section-icon" aria-hidden="true">{{ ui_icon("notes") }}</span>
+            Notes
+          </h2>
+        </div>
+        <div class="collection-detail__panel">
+          <div class="collection-detail__notes" id="note-list">
+            {% for note in collection.notes %}
+              <article class="note-card" data-note-id="{{ note.id }}">
+                <div class="note-card__head">
+                  <h3 class="note-card__title">{{ note.title }}</h3>
+                  <div class="note-card__actions">
+                    <time class="note-card__date" datetime="{{ note.created_at.isoformat() }}">
+                      {{ note.date_label }}
+                    </time>
+                    <button
+                      type="button"
+                      class="collection-detail__note-remove"
+                      aria-label="Remove note from collection"
+                      hidden
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+                <p class="note-card__preview">{{ note.body_preview }}</p>
+                {% if note.book_id is not none and note.chapter is not none and note.verse is not none %}
+                  <a
+                    href="/continue?book={{ note.book_id }}&chapter={{ note.chapter }}&verse={{ note.verse }}"
+                    class="note-card__tag"
+                  >
+                    <span class="note-card__tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                    {{ note.scripture_reference }}
+                  </a>
+                {% else %}
+                  <span class="note-card__tag">
+                    <span class="note-card__tag-icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                    {{ note.scripture_reference }}
+                  </span>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+          <p
+            class="collection-detail__empty"
+            id="notes-empty"
+            {% if collection.notes %}hidden{% endif %}
+          >
+            No notes linked to this collection yet.
+          </p>
+          <div class="collection-detail__add-note" id="note-add-form" hidden>
+            <div class="form-field">
+              <label class="form-label" for="note-title-input">Title</label>
+              <input id="note-title-input" type="text" class="form-input" placeholder="Note title" />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="note-body-input">Body</label>
+              <textarea
+                id="note-body-input"
+                class="form-textarea"
+                rows="3"
+                placeholder="Your note..."
+              ></textarea>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="note-ref-input">Verse reference</label>
+              <div class="verse-input-row">
+                <span class="verse-input-row__icon" aria-hidden="true">{{ ui_icon("book") }}</span>
+                <input
+                  id="note-ref-input"
+                  type="text"
+                  class="form-input verse-input-row__input"
+                  placeholder="John 3:16"
+                />
+              </div>
+            </div>
+            <button type="button" class="verse-add-btn" id="note-add-btn">Add Note</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', path='js/collection-detail.js') }}"></script>
+{% endblock %}
