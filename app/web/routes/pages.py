@@ -12,6 +12,7 @@ from app.db.bible import (
     get_chapter_count,
     get_chapter_verses,
 )
+from app.db.models.bible import KeyEnglish
 from app.db.collections import (
     COLLECTION_COLORS,
     create_collection,
@@ -75,7 +76,7 @@ async def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
     return templates.TemplateResponse(
         request,
         "pages/home.html",
-        {"page": page, "bible_version": bible_version},
+        {"page": page},
     )
 
 
@@ -102,6 +103,12 @@ async def bible(
         progress,
         testament_filter=testament,
     )
+    search_books = get_books(
+        db,
+        bible_version.table,
+        progress,
+        testament_filter="all",
+    )
 
     return templates.TemplateResponse(
         request,
@@ -109,7 +116,37 @@ async def bible(
         {
             "bible_version": bible_version,
             "books": books,
+            "search_books": [
+                {"id": book.id, "name": book.name} for book in search_books
+            ],
             "testament": testament,
+        },
+    )
+
+
+@router.get("/bible/{book_id}", response_class=HTMLResponse, name="bible_chapters")
+async def bible_chapters(
+    request: Request,
+    book_id: int,
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    bible_version = _bible_version_or_500(db)
+    book_row = db.get(KeyEnglish, book_id)
+    if book_row is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    chapter_count = get_chapter_count(db, bible_version.table, book_id)
+    if chapter_count == 0:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    return templates.TemplateResponse(
+        request,
+        "pages/bible_chapters.html",
+        {
+            "bible_version": bible_version,
+            "book_id": book_id,
+            "book_name": book_row.n,
+            "chapter_count": chapter_count,
         },
     )
 

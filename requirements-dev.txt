@@ -1,0 +1,6 @@
+# Development-only dependencies (not installed in the production image).
+# Install with: pip install -r requirements-dev.txt
+
+# Browse bible-sqlite.db in the browser during development:
+#   sqlite_web bible-sqlite.db --host 0.0.0.0 --port 8080
+sqlite-web

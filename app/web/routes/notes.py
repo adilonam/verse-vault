@@ -5,8 +5,10 @@ from app.db.base import get_db
 from app.db.bible import get_book_name
 from app.db.collections import add_note_to_collection
 from app.db.notes import (
+    count_notes_by_title_and_body,
     delete_note_by_id,
     delete_note_for_passage,
+    delete_notes_by_title_and_body,
     get_note_by_id,
     get_note_for_passage,
     update_note,
@@ -15,6 +17,9 @@ from app.db.notes import (
 from app.web.schemas.notes import (
     NoteAddToCollection,
     NoteDetailResponse,
+    NoteMatchBody,
+    NoteMatchCountResponse,
+    NoteMatchDeleteResponse,
     NoteResponse,
     NoteUpdate,
     NoteUpsert,
@@ -113,6 +118,27 @@ def delete_note_for_passage_endpoint(
     book_name = get_book_name(db, book)
     if not delete_note_for_passage(db, book_name, chapter, verse):
         raise HTTPException(status_code=404, detail="Note not found")
+
+
+@router.get("/matching-count", response_model=NoteMatchCountResponse)
+def count_matching_notes_endpoint(
+    title: str = "",
+    body: str = "",
+    db: Session = Depends(get_db),
+) -> NoteMatchCountResponse:
+    count = count_notes_by_title_and_body(db, title, body)
+    return NoteMatchCountResponse(count=count)
+
+
+@router.delete("/matching", response_model=NoteMatchDeleteResponse)
+def delete_matching_notes_endpoint(
+    payload: NoteMatchBody,
+    db: Session = Depends(get_db),
+) -> NoteMatchDeleteResponse:
+    deleted = delete_notes_by_title_and_body(db, payload.title, payload.body)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="No matching notes found")
+    return NoteMatchDeleteResponse(deleted=deleted)
 
 
 @router.patch("/{note_id}", response_model=NoteDetailResponse)

@@ -5,6 +5,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.base import engine
+from app.db.models.collections import CollectionNote
 from app.db.models.notes import Note
 from app.db.verse_refs import (
     format_scripture_reference,
@@ -212,13 +213,57 @@ def update_note(
     return get_note_by_id(db, note_id)
 
 
-def delete_note_by_id(db: Session, note_id: int) -> bool:
+def _delete_note_record(db: Session, note: Note) -> None:
+    for link in db.scalars(
+        select(CollectionNote).where(CollectionNote.note_id == note.id)
+    ).all():
+        db.delete(link)
+    db.delete(note)
+
+
+def delete_note(db: Session, note_id: int, *, commit: bool = True) -> bool:
     note = db.get(Note, note_id)
     if note is None:
         return False
-    db.delete(note)
-    db.commit()
+    _delete_note_record(db, note)
+    if commit:
+        db.commit()
     return True
+
+
+def delete_note_by_id(db: Session, note_id: int) -> bool:
+    return delete_note(db, note_id)
+
+
+def count_notes_by_title_and_body(db: Session, title: str, body: str) -> int:
+    cleaned_title = title.strip()
+    cleaned_body = body.strip()
+    if not cleaned_title and not cleaned_body:
+        return 0
+    return (
+        db.scalar(
+            select(func.count())
+            .select_from(Note)
+            .where(Note.title == cleaned_title, Note.body == cleaned_body)
+        )
+        or 0
+    )
+
+
+def delete_notes_by_title_and_body(db: Session, title: str, body: str) -> int:
+    cleaned_title = title.strip()
+    cleaned_body = body.strip()
+    if not cleaned_title and not cleaned_body:
+        return 0
+    notes = db.scalars(
+        select(Note).where(Note.title == cleaned_title, Note.body == cleaned_body)
+    ).all()
+    count = len(notes)
+    for note in notes:
+        _delete_note_record(db, note)
+    if count:
+        db.commit()
+    return count
 
 
 def delete_note_for_passage(
@@ -234,12 +279,12 @@ def delete_note_for_passage(
         verse_ref = get_or_create_verse_ref(db, book_id, chapter_num, verse_num)
         note = db.scalar(select(Note).where(Note.verse_ref_id == verse_ref.id))
         if note is not None:
-            db.delete(note)
+            _delete_note_record(db, note)
             db.commit()
             return True
     note = db.scalar(select(Note).where(Note.scripture_reference == reference))
     if note is None:
         return False
-    db.delete(note)
+    _delete_note_record(db, note)
     db.commit()
     return True

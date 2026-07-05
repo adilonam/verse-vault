@@ -5,11 +5,6 @@
 
 {% block body %}
   <div class="dashboard">
-    <div class="bible-version-bar">
-      <span class="bible-version-bar__abbrev">{{ bible_version.abbreviation }}</span>
-      <span class="bible-version-bar__name">{{ bible_version.version }}</span>
-    </div>
-
     <header class="top-bar">
       <div class="progress-section">
         <div class="progress-meta">
@@ -65,7 +60,6 @@
         </blockquote>
         <footer class="verse-citation">
           <cite>{{ page.verse_of_day.reference }}</cite>
-          <span>{{ page.verse_of_day.version }}</span>
         </footer>
       </section>
     </main>

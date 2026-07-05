@@ -12,7 +12,7 @@
 
 {% block body %}
   <div class="app-shell">
-    {{ top_nav("collections", bible_version, header_label="Collections", header_icon="collections") }}
+    {{ top_nav("collections", header_label="Collections", header_icon="collections") }}
 
     <main
       class="collection-detail collection-detail--view"
@@ -257,5 +257,6 @@
     </main>
   </div>
 
+  <script src="{{ url_for('static', path='js/confirm-delete.js') }}"></script>
   <script src="{{ url_for('static', path='js/collection-detail.js') }}"></script>
 {% endblock %}

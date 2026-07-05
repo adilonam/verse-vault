@@ -24,7 +24,6 @@ class VerseOfDay(TypedDict):
     label: str
     text: str
     reference: str
-    version: str
 
 
 class HomePage(TypedDict):
@@ -54,7 +53,7 @@ def build_home_page(
 
     return {
         "progress": {
-            "label": "VERSES ANALYZED",
+            "label": "BIBLE",
             "percent": progress_percent,
         },
         "time": "8:13 PM",
@@ -72,7 +71,7 @@ def build_home_page(
             {
                 "id": "bible",
                 "title": "Bible",
-                "subtitle": bible_version.version,
+                "subtitle": "Browse books",
                 "icon": "book",
                 "active": False,
                 "href": "/bible",
@@ -101,6 +100,5 @@ def build_home_page(
             "label": VERSE_OF_DAY_LABEL,
             "text": text,
             "reference": reference,
-            "version": bible_version.abbreviation,
         },
     }

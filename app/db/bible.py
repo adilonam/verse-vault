@@ -32,6 +32,11 @@ class GlobalVerse:
     text: str
 
 
+def _normalize_verse_text(text: str) -> str:
+    """Some translation tables store JSON-style escaped quotes (e.g. \\\")."""
+    return text.replace('\\"', '"')
+
+
 def get_verse_model(version_table: str) -> type[VerseMixin]:
     try:
         return VERSE_TABLE_MODELS[version_table]
@@ -95,6 +100,26 @@ def get_books(
     return books
 
 
+def get_verse_text(
+    db: Session,
+    version_table: str,
+    book_id: int,
+    chapter: int,
+    verse: int,
+) -> str | None:
+    verse_model = get_verse_model(version_table)
+    row = db.scalars(
+        select(verse_model)
+        .where(
+            verse_model.b == book_id,
+            verse_model.c == chapter,
+            verse_model.v == verse,
+        )
+        .limit(1)
+    ).first()
+    return _normalize_verse_text(row.t) if row else None
+
+
 def get_chapter_verses(
     db: Session,
     version_table: str,
@@ -107,7 +132,9 @@ def get_chapter_verses(
         .where(verse_model.b == book_id, verse_model.c == chapter)
         .order_by(verse_model.v)
     ).all()
-    return [BibleVerse(number=row.v, text=row.t) for row in rows]
+    return [
+        BibleVerse(number=row.v, text=_normalize_verse_text(row.t)) for row in rows
+    ]
 
 
 def get_verse_count_in_chapter(
@@ -148,7 +175,7 @@ def get_verse_by_global_index(
         book_id=row.b,
         chapter=row.c,
         verse=row.v,
-        text=row.t,
+        text=_normalize_verse_text(row.t),
     )
 
 
