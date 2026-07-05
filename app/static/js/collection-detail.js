@@ -307,8 +307,12 @@
   }
 
   async function removeNote(noteId, cardEl) {
+    const title = cardEl.querySelector(".note-card__title")?.textContent?.trim();
+    const label = title && title !== "Untitled" ? `"${title}"` : "this note";
+    if (!(await window.confirmDelete(`Delete ${label}? This cannot be undone.`))) return;
+
     try {
-      const response = await fetch(apiUrl(`/notes/${noteId}`), {
+      const response = await fetch(`/api/notes/${noteId}`, {
         method: "DELETE",
       });
       if (!response.ok) return;

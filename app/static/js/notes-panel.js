@@ -89,16 +89,35 @@
   }
 
   async function deleteNote() {
-    if (!noteId && !titleInput.value && !bodyInput.value) return;
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+    if (!title && !body) return;
+
+    let count = 0;
+    try {
+      const params = new URLSearchParams({ title, body });
+      const countResponse = await fetch(`/api/notes/matching-count?${params}`);
+      if (!countResponse.ok) return;
+      const data = await countResponse.json();
+      count = data.count;
+    } catch {
+      return;
+    }
+
+    if (count === 0) return;
+
+    const message =
+      count === 1
+        ? "Delete this note? This cannot be undone."
+        : `Delete ${count} matching notes? This cannot be undone.`;
+    if (!(await window.confirmDelete(message))) return;
 
     try {
-      const response = await fetch(`/api/notes/passage?${passageParams()}`, {
+      const response = await fetch("/api/notes/matching", {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body }),
       });
-      if (response.status === 404) {
-        clearFields();
-        return;
-      }
       if (!response.ok) return;
       clearFields();
       flashButton(deleteBtn, "Deleted");

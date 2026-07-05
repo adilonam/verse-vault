@@ -6,10 +6,11 @@ from app.db.bible import get_book_name
 from app.db.collections import (
     add_note_to_collection,
     add_verse_to_collection,
+    delete_collection,
     get_collection_detail,
     get_collection_list,
     link_note_to_collection,
-    remove_note_from_collection,
+    delete_note_from_collection,
     remove_verse_from_collection,
     update_collection,
 )
@@ -107,6 +108,15 @@ def get_collection(
     if detail is None:
         raise HTTPException(status_code=404, detail="Collection not found")
     return _to_detail_response(detail)
+
+
+@router.delete("/{collection_id}", status_code=204)
+def delete_collection_endpoint(
+    collection_id: int,
+    db: Session = Depends(get_db),
+) -> None:
+    if not delete_collection(db, collection_id):
+        raise HTTPException(status_code=404, detail="Collection not found")
 
 
 @router.patch("/{collection_id}", response_model=CollectionDetailResponse)
@@ -225,5 +235,5 @@ def delete_collection_note(
     note_id: int,
     db: Session = Depends(get_db),
 ) -> None:
-    if not remove_note_from_collection(db, collection_id, note_id):
+    if not delete_note_from_collection(db, collection_id, note_id):
         raise HTTPException(status_code=404, detail="Note not found in collection")

@@ -11,7 +11,7 @@
 
 {% block body %}
   <div class="app-shell">
-    {{ top_nav("collections", bible_version, header_label="Collections", header_icon="collections") }}
+    {{ top_nav("collections", header_label="Collections", header_icon="collections") }}
 
     <div class="collections-toolbar">
       <label class="search-field search-field--with-icon">
@@ -32,6 +32,7 @@
     </div>
 
     <main class="collections-list">
+      <p class="collections-list__empty" hidden>No collections match your search.</p>
       {% for collection in collections %}
         <article class="collection-card">
           <div class="collection-card__icon collection-card__icon--{{ collection.color }}" aria-hidden="true">
@@ -56,12 +57,26 @@
               </div>
             {% endif %}
           </div>
-          <a href="/collections/{{ collection.id }}" class="collection-card__detail-btn">
-            <span class="collection-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
-            View details
-          </a>
+          <div class="collection-card__actions">
+            <button
+              type="button"
+              class="collection-card__delete-btn"
+              data-collection-id="{{ collection.id }}"
+              data-collection-name="{{ collection.name }}"
+              aria-label="Delete {{ collection.name }}"
+            >
+              Delete
+            </button>
+            <a href="/collections/{{ collection.id }}" class="collection-card__detail-btn">
+              <span class="collection-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
+              View details
+            </a>
+          </div>
         </article>
       {% endfor %}
     </main>
   </div>
+
+  <script src="{{ url_for('static', path='js/confirm-delete.js') }}"></script>
+  <script src="{{ url_for('static', path='js/collections-list.js') }}"></script>
 {% endblock %}

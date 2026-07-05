@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.db.base import engine
 from app.db.models.collections import Collection, CollectionNote, CollectionVerseRef
 from app.db.models.notes import Note
-from app.db.notes import upsert_note
+from app.db.notes import delete_note, upsert_note
 from app.db.verse_refs import get_or_create_verse_ref, parse_reference_string
 
 SAMPLE_COLLECTIONS: list[dict[str, object]] = [
@@ -572,7 +572,25 @@ def link_note_to_collection(
     )
 
 
-def remove_note_from_collection(
+def delete_collection(db: Session, collection_id: int) -> bool:
+    collection = db.get(Collection, collection_id)
+    if collection is None:
+        return False
+
+    note_ids = db.scalars(
+        select(CollectionNote.note_id).where(
+            CollectionNote.collection_id == collection_id
+        )
+    ).all()
+    for note_id in note_ids:
+        delete_note(db, note_id, commit=False)
+
+    db.delete(collection)
+    db.commit()
+    return True
+
+
+def delete_note_from_collection(
     db: Session,
     collection_id: int,
     note_id: int,
@@ -586,7 +604,10 @@ def remove_note_from_collection(
     if link is None:
         return False
 
-    db.delete(link)
+    if db.get(Note, note_id) is None:
+        return False
+
+    delete_note(db, note_id, commit=False)
     collection = db.get(Collection, collection_id)
     if collection is not None:
         collection.updated_at = datetime.now()

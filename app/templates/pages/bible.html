@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "partials/top_nav.html" import top_nav %}
+{% from "partials/icons.html" import ui_icon %}
 
 {% block title %}Bible · Verse Vault{% endblock %}
 
@@ -9,7 +10,7 @@
 
 {% block body %}
   <div class="app-shell">
-    {{ top_nav("bible", bible_version) }}
+    {{ top_nav("bible") }}
 
     <div class="bible-toolbar">
       <label class="search-field">
@@ -36,11 +37,36 @@
       </div>
     </div>
 
+    <section
+      class="bible-preview"
+      id="bible-preview"
+      data-version-abbr="{{ bible_version.abbreviation }}"
+      hidden
+    >
+      <p class="bible-preview__label" id="bible-preview-label"></p>
+      <div class="bible-preview__body" id="bible-preview-body"></div>
+      <div class="bible-preview__foot">
+        <p class="bible-preview__notes" id="bible-preview-notes" hidden>
+          <span class="bible-preview__notes-icon" aria-hidden="true">{{ ui_icon("notes") }}</span>
+          <span id="bible-preview-notes-text"></span>
+        </p>
+        <a
+          href="#"
+          class="bible-preview__continue-btn"
+          id="bible-preview-continue"
+          hidden
+        >Continue reading</a>
+      </div>
+    </section>
+
     <main class="book-grid">
+      <p class="book-grid__empty" hidden>No books match your search.</p>
       {% for book in books %}
         <a
-          href="/continue?book={{ book.id }}"
+          href="/bible/{{ book.id }}"
           class="book-card"
+          data-book-id="{{ book.id }}"
+          data-book-name="{{ book.name }}"
         >
           <div class="book-card__head">
             <h2 class="book-card__title">{{ book.name }}</h2>
@@ -68,4 +94,7 @@
       {% endfor %}
     </main>
   </div>
+
+  <script type="application/json" id="bible-search-books">{{ search_books | tojson }}</script>
+  <script src="{{ url_for('static', path='js/bible-books.js') }}"></script>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% from "partials/icons.html" import nav_icon %}
 
-{% macro top_nav(active, bible_version, header_label=None, header_icon=None) %}
+{% macro top_nav(active, header_label=None, header_icon=None) %}
   <header class="app-header">
     <nav class="app-tabs" aria-label="Main navigation">
       <a
@@ -43,7 +43,7 @@
       {% elif header_label %}
         <span>{{ header_label }}</span>
       {% else %}
-        <span>Bible · {{ bible_version.abbreviation }}</span>
+        <span>Bible</span>
       {% endif %}
     </div>
   </header>

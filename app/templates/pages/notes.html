@@ -11,7 +11,7 @@
 
 {% block body %}
   <div class="app-shell">
-    {{ top_nav("notes", bible_version, header_label="Notes", header_icon="notes") }}
+    {{ top_nav("notes", header_label="Notes", header_icon="notes") }}
 
     <div class="notes-toolbar">
       <label class="search-field">
@@ -26,6 +26,7 @@
     </div>
 
     <main class="notes-list">
+      <p class="notes-list__empty" hidden>No notes match your search.</p>
       {% for note in notes %}
         <article class="note-card">
           <div class="note-card__body">
@@ -47,12 +48,26 @@
               <span class="note-card__tag">{{ note.scripture_reference }}</span>
             {% endif %}
           </div>
-          <a href="/notes/{{ note.id }}" class="note-card__detail-btn">
-            <span class="note-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
-            View details
-          </a>
+          <div class="note-card__actions">
+            <button
+              type="button"
+              class="note-card__delete-btn"
+              data-note-id="{{ note.id }}"
+              data-note-title="{{ note.title }}"
+              aria-label="Delete {{ note.title }}"
+            >
+              Delete
+            </button>
+            <a href="/notes/{{ note.id }}" class="note-card__detail-btn">
+              <span class="note-card__detail-btn-icon" aria-hidden="true">{{ ui_icon("chevron-right") }}</span>
+              View details
+            </a>
+          </div>
         </article>
       {% endfor %}
     </main>
   </div>
+
+  <script src="{{ url_for('static', path='js/confirm-delete.js') }}"></script>
+  <script src="{{ url_for('static', path='js/notes-list.js') }}"></script>
 {% endblock %}

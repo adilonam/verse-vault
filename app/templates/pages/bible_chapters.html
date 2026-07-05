@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/top_nav.html" import top_nav %}
+
+{% block title %}{{ book_name }} · Verse Vault{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}" />
+{% endblock %}
+
+{% block body %}
+  <div class="app-shell">
+    {{ top_nav("bible", header_label=book_name, header_icon="book") }}
+
+    <main class="chapter-select">
+      <p class="chapter-select__label">{{ chapter_count }} chapter{{ "s" if chapter_count != 1 else "" }}</p>
+      <div class="chapter-grid" role="list">
+        {% for chapter in range(1, chapter_count + 1) %}
+          <a
+            href="/continue?book={{ book_id }}&chapter={{ chapter }}"
+            class="chapter-btn"
+            role="listitem"
+          >{{ chapter }}</a>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+{% endblock %}

@@ -10,7 +10,7 @@
 
 {% block body %}
   <div class="app-shell app-shell--reader">
-    {{ top_nav("bible", bible_version, book_name ~ " " ~ chapter ~ " · " ~ bible_version.abbreviation) }}
+    {{ top_nav("bible", header_label=book_name ~ " " ~ chapter) }}
 
     <main class="reader-layout">
       <section class="reader-panel">
@@ -123,6 +123,7 @@
     </div>
   </div>
 
+  <script src="{{ url_for('static', path='js/confirm-delete.js') }}" defer></script>
   <script src="{{ url_for('static', path='js/reader.js') }}" defer></script>
   <script src="{{ url_for('static', path='js/reader-resizer.js') }}" defer></script>
   <script src="{{ url_for('static', path='js/notes-panel.js') }}" defer></script>

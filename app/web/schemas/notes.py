@@ -40,3 +40,16 @@ class NoteAddToCollection(BaseModel):
     chapter: int = Field(ge=1)
     verse: int = Field(ge=1)
     collection_id: int = Field(ge=1)
+
+
+class NoteMatchBody(BaseModel):
+    title: str = ""
+    body: str = ""
+
+
+class NoteMatchCountResponse(BaseModel):
+    count: int
+
+
+class NoteMatchDeleteResponse(BaseModel):
+    deleted: int
