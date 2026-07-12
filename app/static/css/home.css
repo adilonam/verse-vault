@@ -79,6 +79,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Keyboard focus — visible on 800x480 LCD (no touch) */
+:focus {
+  outline: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible,
+a:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+[tabindex]:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.22);
+}
+
+.nav-card:focus,
+.nav-card:focus-visible {
+  border-color: var(--gold);
+  background: rgba(201, 169, 98, 0.08);
+}
+
 .dashboard {
   min-height: 100vh;
   display: grid;
@@ -282,26 +310,6 @@ body {
   color: var(--gold-soft);
 }
 
-.reset-btn:hover {
-  color: var(--gold-soft);
-  border-color: var(--border-strong);
-}
-
-.reset-form {
-  margin-top: 0.75rem;
-}
-
-.reset-btn {
-  padding: 0.45rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: 0.7rem;
-  cursor: pointer;
-}
-
 .date-footer {
   margin-top: 2rem;
   text-align: center;
@@ -324,10 +332,6 @@ body {
 
   .progress-meta {
     margin-bottom: 0.6rem;
-  }
-
-  .reset-form {
-    margin-top: 0.55rem;
   }
 
   .main-grid {

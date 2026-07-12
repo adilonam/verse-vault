@@ -131,6 +131,17 @@
     modal.hidden = true;
   }
 
+  function focusCollectionModal() {
+    if (window.verseVaultKbd && typeof window.verseVaultKbd.focusFirstIn === "function") {
+      window.verseVaultKbd.focusFirstIn(modal);
+      return;
+    }
+    const first =
+      modal.querySelector(".collection-modal__item") ||
+      modal.querySelector(".collection-modal__cancel");
+    if (first) first.focus();
+  }
+
   function openCollectionModal() {
     if (!modal) return;
     modal.hidden = false;
@@ -146,6 +157,7 @@
       empty.className = "collection-modal__empty";
       empty.textContent = "No collections yet. Create one from the Collections tab.";
       modalList.appendChild(empty);
+      focusCollectionModal();
       return;
     }
 
@@ -170,6 +182,7 @@
       item.appendChild(button);
       modalList.appendChild(item);
     }
+    focusCollectionModal();
   }
 
   async function loadCollectionOptions() {

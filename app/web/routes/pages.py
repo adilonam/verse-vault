@@ -26,7 +26,6 @@ from app.db.reading import (
     get_book_last_position,
     get_overall_progress_percent,
     get_reading_position,
-    reset_reading,
     set_reading_position,
 )
 from app.web.content.home import build_home_page
@@ -78,12 +77,6 @@ async def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
         "pages/home.html",
         {"page": page},
     )
-
-
-@router.post("/reset-reading", name="reset_reading")
-async def reset_reading_status(db: Session = Depends(get_db)) -> RedirectResponse:
-    reset_reading(db)
-    return RedirectResponse(url="/", status_code=303)
 
 
 @router.get("/bible", response_class=HTMLResponse, name="bible")

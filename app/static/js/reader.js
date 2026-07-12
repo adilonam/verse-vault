@@ -82,18 +82,43 @@
   reader.setAttribute("role", "listbox");
   reader.setAttribute("aria-label", "Chapter verses");
 
-  document.addEventListener("keydown", (event) => {
-    const tag = event.target.tagName;
-    if (tag === "INPUT" || tag === "TEXTAREA") return;
+  const chapterNav = document.querySelector(".reader-panel .chapter-nav");
 
+  function focusChapterNav() {
+    if (!chapterNav) return;
+    const link = chapterNav.querySelector("a.chapter-nav__btn");
+    if (link) link.focus({ preventScroll: true });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || !target.classList.contains("verse-line")) {
+      return;
+    }
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      selectVerse(currentIndex + 1);
+      if (currentIndex < verses.length - 1) {
+        selectVerse(currentIndex + 1);
+      } else {
+        focusChapterNav();
+      }
     } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      selectVerse(currentIndex - 1);
+      if (currentIndex > 0) {
+        event.preventDefault();
+        selectVerse(currentIndex - 1);
+      }
     }
   });
+
+  if (chapterNav) {
+    chapterNav.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowUp") return;
+      const target = event.target;
+      if (!(target instanceof Element) || !chapterNav.contains(target)) return;
+      event.preventDefault();
+      verses[currentIndex].focus({ preventScroll: true });
+    });
+  }
 
   updateTabIndices();
   verses[currentIndex].focus({ preventScroll: true });
