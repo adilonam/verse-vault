@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from app.db.base import engine
@@ -181,15 +181,3 @@ def get_overall_progress_percent(db: Session) -> int:
     progress = get_book_progress(db)
     total = sum(progress.get(book_id, 0) for book_id in range(1, 67))
     return round(total / 66)
-
-
-def reset_reading(db: Session) -> None:
-    db.execute(delete(BookProgress))
-    position = db.get(ReadingPosition, 1)
-    if position is None:
-        db.add(ReadingPosition(id=1, book_id=1, chapter=1, verse=1))
-    else:
-        position.book_id = 1
-        position.chapter = 1
-        position.verse = 1
-    db.commit()
