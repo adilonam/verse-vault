@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.base import get_db
 from app.db.bible import (
+    book_exists,
     get_bible_version,
     get_book_name,
     get_books,
@@ -26,7 +27,8 @@ from app.db.reading import (
     get_book_last_position,
     get_overall_progress_percent,
     get_reading_position,
-    set_reading_position,
+    reset_reading,
+    save_reading_progress,
 )
 from app.web.content.home import build_home_page
 
@@ -77,6 +79,12 @@ async def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
         "pages/home.html",
         {"page": page},
     )
+
+
+@router.post("/reset-reading", name="reset_reading")
+async def reset_reading_status(db: Session = Depends(get_db)) -> RedirectResponse:
+    reset_reading(db)
+    return RedirectResponse(url="/", status_code=303)
 
 
 @router.get("/bible", response_class=HTMLResponse, name="bible")
@@ -337,7 +345,13 @@ async def continue_reading(
         else:
             current_verse = 1
 
-        set_reading_position(db, book_id, chapter_num, current_verse)
+    save_reading_progress(
+        db,
+        bible_version.table,
+        book_id,
+        chapter_num,
+        current_verse,
+    )
 
     book_name = get_book_name(db, book_id)
     verses = get_chapter_verses(
@@ -355,6 +369,30 @@ async def continue_reading(
         book_id,
     )
 
+    if chapter_num > 1:
+        prev_book = book_id
+        prev_chapter = chapter_num - 1
+    elif book_id > 1 and book_exists(db, book_id - 1):
+        prev_book = book_id - 1
+        prev_chapter = get_chapter_count(
+            db,
+            bible_version.table,
+            prev_book,
+        )
+    else:
+        prev_book = None
+        prev_chapter = None
+
+    if chapter_num < chapter_count:
+        next_book = book_id
+        next_chapter = chapter_num + 1
+    elif book_exists(db, book_id + 1):
+        next_book = book_id + 1
+        next_chapter = 1
+    else:
+        next_book = None
+        next_chapter = None
+
     return templates.TemplateResponse(
         request,
         "pages/continue.html",
@@ -366,7 +404,9 @@ async def continue_reading(
             "verses": verses,
             "current_verse": current_verse,
             "section_title": CHAPTER_SECTIONS.get((book_id, chapter_num)),
-            "prev_chapter": chapter_num - 1 if chapter_num > 1 else None,
-            "next_chapter": chapter_num + 1 if chapter_num < chapter_count else None,
+            "prev_book": prev_book,
+            "prev_chapter": prev_chapter,
+            "next_book": next_book,
+            "next_chapter": next_chapter,
         },
     )

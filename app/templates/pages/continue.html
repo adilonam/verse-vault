@@ -40,7 +40,7 @@
         <nav class="chapter-nav" aria-label="Chapter navigation">
           {% if prev_chapter %}
             <a
-              href="/continue?book={{ book_id }}&chapter={{ prev_chapter }}"
+              href="/continue?book={{ prev_book }}&chapter={{ prev_chapter }}"
               class="chapter-nav__btn"
             >&lt; Previous</a>
           {% else %}
@@ -48,7 +48,7 @@
           {% endif %}
           {% if next_chapter %}
             <a
-              href="/continue?book={{ book_id }}&chapter={{ next_chapter }}"
+              href="/continue?book={{ next_book }}&chapter={{ next_chapter }}"
               class="chapter-nav__btn"
             >Next &gt;</a>
           {% else %}
