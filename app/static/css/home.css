@@ -427,3 +427,123 @@ select:focus,
     padding-right: 0;
   }
 }
+
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.confirm-modal[hidden] {
+  display: none;
+}
+
+.confirm-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.confirm-modal__dialog {
+  position: relative;
+  width: min(100%, 24rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.85rem;
+  background: rgba(22, 18, 14, 0.98);
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.45);
+}
+
+.confirm-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.confirm-modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #d48484;
+}
+
+.confirm-modal__icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.confirm-modal__title {
+  margin: 0;
+  font-family: var(--font-verse);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--gold-soft);
+}
+
+.confirm-modal__message {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.confirm-modal__actions {
+  display: flex;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  margin-top: 0.15rem;
+}
+
+.confirm-modal__cancel,
+.confirm-modal__confirm {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.confirm-modal__cancel {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.confirm-modal__cancel:hover {
+  color: var(--gold-soft);
+  border-color: var(--border-strong);
+}
+
+.confirm-modal__cancel:focus,
+.confirm-modal__confirm:focus,
+.confirm-modal__cancel:focus-visible,
+.confirm-modal__confirm:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.22);
+}
+
+.confirm-modal__confirm {
+  border: 1px solid rgba(212, 132, 132, 0.35);
+  background: rgba(212, 132, 132, 0.12);
+  color: #d48484;
+}
+
+.confirm-modal__confirm:hover {
+  color: #e8a0a0;
+  border-color: rgba(212, 132, 132, 0.55);
+  background: rgba(212, 132, 132, 0.2);
+}

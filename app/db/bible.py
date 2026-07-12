@@ -56,6 +56,10 @@ def get_book_name(db: Session, book_id: int) -> str:
     return book.n if book else f"Book {book_id}"
 
 
+def book_exists(db: Session, book_id: int) -> bool:
+    return db.get(KeyEnglish, book_id) is not None
+
+
 def get_chapter_count(db: Session, version_table: str, book_id: int) -> int:
     verse_model = get_verse_model(version_table)
     chapter_count = db.scalar(

@@ -13,8 +13,6 @@
   );
   if (currentIndex < 0) currentIndex = 0;
 
-  let saveTimer = null;
-
   function updateTabIndices() {
     verses.forEach((verse, index) => {
       verse.setAttribute("tabindex", index === currentIndex ? "0" : "-1");
@@ -36,11 +34,6 @@
         verse,
       }),
     }).catch(() => {});
-  }
-
-  function queueSave() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(savePosition, 200);
   }
 
   function dispatchVerseChange() {
@@ -66,7 +59,7 @@
     verses[currentIndex].focus({ preventScroll: true });
 
     scrollToCurrent();
-    queueSave();
+    savePosition();
     dispatchVerseChange();
   }
 
@@ -123,5 +116,6 @@
   updateTabIndices();
   verses[currentIndex].focus({ preventScroll: true });
   scrollToCurrent();
+  savePosition();
   dispatchVerseChange();
 })();

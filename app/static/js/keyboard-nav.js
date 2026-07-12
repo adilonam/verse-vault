@@ -228,8 +228,34 @@
     el.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
+  // Hidden reset: Ctrl+Shift+R opens confirm modal (no dashboard button).
+  function handleHiddenReset(event) {
+    if (
+      event.ctrlKey &&
+      event.shiftKey &&
+      !event.altKey &&
+      !event.metaKey &&
+      (event.key === "R" || event.key === "r")
+    ) {
+      event.preventDefault();
+      if (openModalRoot()) return true;
+      if (typeof window.confirmResetReading !== "function") return true;
+      window.confirmResetReading().then((confirmed) => {
+        if (!confirmed) return;
+        fetch("/reset-reading", { method: "POST", redirect: "follow" }).then(
+          () => {
+            location.href = "/";
+          }
+        );
+      });
+      return true;
+    }
+    return false;
+  }
+
   function onKeydown(event) {
     if (event.defaultPrevented) return;
+    if (handleHiddenReset(event)) return;
     if (event.altKey || event.ctrlKey || event.metaKey) return;
 
     const key = event.key;
@@ -253,6 +279,16 @@
     }
 
     if (key === "Enter") {
+      const openModal = openModalRoot();
+      if (openModal && openModal.classList.contains("confirm-modal")) {
+        const confirm = openModal.querySelector(".confirm-modal__confirm");
+        if (confirm) {
+          event.preventDefault();
+          confirm.click();
+          return;
+        }
+      }
+
       if (isTextEntry(active) || !active || active === document.body) return;
       const tag = active.tagName;
       if (tag === "INPUT") {
