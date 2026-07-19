@@ -22,7 +22,6 @@ class Settings:
         "DATABASE_URL",
         f"sqlite:///{database_path.resolve()}",
     )
-    bible_version_id: int = int(os.getenv("BIBLE_VERSION_ID", "4"))
 
 
 settings = Settings()

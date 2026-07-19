@@ -24,6 +24,9 @@ class VerseOfDay(TypedDict):
     label: str
     text: str
     reference: str
+    book_id: int
+    chapter: int
+    verse: int
 
 
 class HomePage(TypedDict):
@@ -49,7 +52,7 @@ def build_home_page(
     note_count: int,
     collection_count: int,
 ) -> HomePage:
-    text, reference = get_verse_of_day(db, bible_version.table)
+    verse, reference = get_verse_of_day(db, bible_version.table)
 
     return {
         "progress": {
@@ -98,7 +101,10 @@ def build_home_page(
         ],
         "verse_of_day": {
             "label": VERSE_OF_DAY_LABEL,
-            "text": text,
+            "text": verse.text,
             "reference": reference,
+            "book_id": verse.book_id,
+            "chapter": verse.chapter,
+            "verse": verse.verse,
         },
     }

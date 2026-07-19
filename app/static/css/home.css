@@ -49,6 +49,8 @@
 :root {
   --bg: #120f0d;
   --bg-elevated: rgba(255, 255, 255, 0.03);
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --bg-panel-hover: rgba(255, 255, 255, 0.05);
   --border: rgba(201, 169, 98, 0.14);
   --border-strong: rgba(201, 169, 98, 0.28);
   --gold: #c9a962;
@@ -187,13 +189,35 @@ select:focus,
   grid-column: 1;
 }
 
-.verse-panel {
+.verse-panel,
+.verse-panel:link,
+.verse-panel:visited {
   grid-column: 3;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: clamp(18rem, calc(100vh - 12rem), 28rem);
   padding: 1rem 0 1rem 1rem;
+  color: inherit;
+  text-decoration: none;
+  text-decoration-color: currentColor;
+  border-radius: 0.65rem;
+  cursor: pointer;
+}
+
+.verse-panel:hover,
+.verse-panel:focus,
+.verse-panel:focus-visible {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+}
+
+.verse-panel:focus,
+.verse-panel:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.22);
 }
 
 .nav-panel .section-label {
@@ -461,6 +485,10 @@ select:focus,
   box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.45);
 }
 
+.settings-modal .confirm-modal__dialog {
+  width: min(100%, 26rem);
+}
+
 .confirm-modal__header {
   display: flex;
   align-items: center;
@@ -546,4 +574,89 @@ select:focus,
   color: #e8a0a0;
   border-color: rgba(212, 132, 132, 0.55);
   background: rgba(212, 132, 132, 0.2);
+}
+
+.settings-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 14rem;
+  padding: 0.15rem 0.55rem 0.15rem 0.25rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Same thin gold scrollbar as .reader-text (continue page). */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-muted) var(--bg-panel);
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-panel);
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 98, 0.45);
+}
+
+.settings-modal__option {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.settings-modal__option:hover,
+.settings-modal__option:focus,
+.settings-modal__option:focus-visible {
+  border-color: var(--border-strong);
+  color: var(--gold-soft);
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.settings-modal__option--current {
+  border-color: rgba(201, 169, 98, 0.45);
+  background: rgba(201, 169, 98, 0.1);
+  color: var(--gold-soft);
+}
+
+.settings-modal__abbr {
+  flex: 0 0 3.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+
+.settings-modal__name {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: inherit;
+}
+
+.settings-modal__loading {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }

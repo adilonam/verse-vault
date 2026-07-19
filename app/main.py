@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.db.collections import init_collections_tables
 from app.db.notes import init_notes_tables
 from app.db.reading import init_reading_tables
+from app.db.settings import init_app_settings_table
 from app.db.verse_refs import init_verse_refs_tables
 from app.web.router import api_router
 
@@ -17,6 +18,7 @@ async def lifespan(_: FastAPI):
     init_verse_refs_tables()
     init_notes_tables()
     init_collections_tables()
+    init_app_settings_table()
     yield
 
 

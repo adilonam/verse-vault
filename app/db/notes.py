@@ -5,13 +5,33 @@ from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.base import engine
+from app.db.bible import get_book_name
 from app.db.models.collections import CollectionNote
 from app.db.models.notes import Note
+from app.db.models.verse_refs import VerseRef
 from app.db.verse_refs import (
     format_scripture_reference,
     get_or_create_verse_ref,
     parse_reference_string,
 )
+
+NOTE_CSV_HEADERS = (
+    "title",
+    "body",
+    "scripture_reference",
+    "book_id",
+    "chapter",
+    "verse",
+    "created_at",
+    "updated_at",
+)
+
+
+@dataclass(frozen=True)
+class NoteImportResult:
+    added: int
+    skipped: int
+    errors: int
 
 
 @dataclass(frozen=True)
@@ -87,6 +107,26 @@ def get_notes(db: Session) -> list[NoteData]:
 
 def get_note_count(db: Session) -> int:
     return db.scalar(select(func.count()).select_from(Note)) or 0
+
+
+def count_unique_noted_verses(db: Session) -> int:
+    return (
+        db.scalar(
+            select(func.count(func.distinct(Note.verse_ref_id))).where(
+                Note.verse_ref_id.is_not(None)
+            )
+        )
+        or 0
+    )
+
+
+def get_noted_verse_counts_by_book(db: Session) -> dict[int, int]:
+    rows = db.execute(
+        select(VerseRef.book_id, func.count(func.distinct(Note.verse_ref_id)))
+        .join(Note, Note.verse_ref_id == VerseRef.id)
+        .group_by(VerseRef.book_id)
+    ).all()
+    return {book_id: count for book_id, count in rows}
 
 
 def get_note_by_id(db: Session, note_id: int) -> NoteData | None:
@@ -288,3 +328,131 @@ def delete_note_for_passage(
     _delete_note_record(db, note)
     db.commit()
     return True
+
+
+def note_content_exists(
+    db: Session,
+    title: str,
+    body: str,
+    scripture_reference: str,
+) -> bool:
+    """Match on note content fields — never on note id."""
+    return (
+        db.scalar(
+            select(func.count())
+            .select_from(Note)
+            .where(
+                Note.title == title,
+                Note.body == body,
+                Note.scripture_reference == scripture_reference,
+            )
+        )
+        or 0
+    ) > 0
+
+
+def _parse_optional_int(value: object) -> int | None:
+    if value is None:
+        return None
+    raw = str(value).strip()
+    if not raw:
+        return None
+    return int(raw)
+
+
+def _parse_optional_datetime(value: object, fallback: datetime) -> datetime:
+    if value is None:
+        return fallback
+    text_value = str(value).strip()
+    if not text_value:
+        return fallback
+    if text_value.endswith("Z"):
+        text_value = text_value[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text_value)
+    except ValueError:
+        return fallback
+    if parsed.tzinfo is not None:
+        parsed = parsed.replace(tzinfo=None)
+    return parsed
+
+
+def import_notes_from_rows(
+    db: Session,
+    rows: list[dict[str, str]],
+) -> NoteImportResult:
+    """Import notes keyed by content (title, body, scripture_reference).
+
+    Existing matching content is skipped; note ids are ignored.
+    """
+    added = 0
+    skipped = 0
+    errors = 0
+    now = datetime.now()
+
+    for row in rows:
+        title = (row.get("title") or "").strip()
+        body = (row.get("body") or "").strip()
+        scripture_reference = (row.get("scripture_reference") or "").strip()
+
+        try:
+            book_id = _parse_optional_int(row.get("book_id"))
+            chapter = _parse_optional_int(row.get("chapter"))
+            verse = _parse_optional_int(row.get("verse"))
+        except ValueError:
+            errors += 1
+            continue
+
+        verse_ref = None
+        if book_id is not None and chapter is not None and verse is not None:
+            if not (1 <= book_id <= 66 and chapter >= 1 and verse >= 1):
+                errors += 1
+                continue
+            book_name = get_book_name(db, book_id)
+            verse_ref = get_or_create_verse_ref(
+                db,
+                book_id,
+                chapter,
+                verse,
+                book_name=book_name,
+            )
+            scripture_reference = verse_ref.reference
+        elif scripture_reference:
+            parsed = parse_reference_string(db, scripture_reference)
+            if parsed is not None:
+                parsed_book_id, parsed_chapter, parsed_verse = parsed
+                verse_ref = get_or_create_verse_ref(
+                    db,
+                    parsed_book_id,
+                    parsed_chapter,
+                    parsed_verse,
+                )
+                scripture_reference = verse_ref.reference
+        else:
+            errors += 1
+            continue
+
+        if not scripture_reference:
+            errors += 1
+            continue
+
+        if note_content_exists(db, title, body, scripture_reference):
+            skipped += 1
+            continue
+
+        created_at = _parse_optional_datetime(row.get("created_at"), now)
+        updated_at = _parse_optional_datetime(row.get("updated_at"), created_at)
+        note = Note(
+            title=title,
+            body=body,
+            scripture_reference=scripture_reference,
+            verse_ref_id=verse_ref.id if verse_ref else None,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
+        db.add(note)
+        added += 1
+
+    if added:
+        db.commit()
+    return NoteImportResult(added=added, skipped=skipped, errors=errors)

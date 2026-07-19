@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.db.base import get_db
-from app.db.bible import get_bible_version, get_book_name, get_verse_text
+from app.db.bible import get_book_name, get_verse_text
+from app.db.settings import get_active_bible_version
 from app.web.schemas.bible import VerseLookupResponse
 
 router = APIRouter(prefix="/api/bible", tags=["bible"])
@@ -16,7 +16,7 @@ def lookup_verse(
     verse: int = Query(ge=1),
     db: Session = Depends(get_db),
 ) -> VerseLookupResponse:
-    bible_version = get_bible_version(db, settings.bible_version_id)
+    bible_version = get_active_bible_version(db)
     text = get_verse_text(db, bible_version.table, book, chapter, verse)
     if text is None:
         raise HTTPException(status_code=404, detail="Verse not found")

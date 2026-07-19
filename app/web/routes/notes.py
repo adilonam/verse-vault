@@ -1,22 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import csv
+import io
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.base import get_db
 from app.db.bible import get_book_name
 from app.db.collections import add_note_to_collection
 from app.db.notes import (
+    NOTE_CSV_HEADERS,
     count_notes_by_title_and_body,
     delete_note_by_id,
     delete_note_for_passage,
     delete_notes_by_title_and_body,
     get_note_by_id,
     get_note_for_passage,
+    get_notes,
+    import_notes_from_rows,
     update_note,
     upsert_note,
 )
 from app.web.schemas.notes import (
     NoteAddToCollection,
     NoteDetailResponse,
+    NoteImportResponse,
     NoteMatchBody,
     NoteMatchCountResponse,
     NoteMatchDeleteResponse,
@@ -118,6 +127,86 @@ def delete_note_for_passage_endpoint(
     book_name = get_book_name(db, book)
     if not delete_note_for_passage(db, book_name, chapter, verse):
         raise HTTPException(status_code=404, detail="Note not found")
+
+
+@router.get("/export")
+def export_notes_csv(
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=NOTE_CSV_HEADERS, lineterminator="\n")
+    writer.writeheader()
+    for note in get_notes(db):
+        writer.writerow(
+            {
+                "title": note.title,
+                "body": note.body,
+                "scripture_reference": note.scripture_reference,
+                "book_id": note.book_id if note.book_id is not None else "",
+                "chapter": note.chapter if note.chapter is not None else "",
+                "verse": note.verse if note.verse is not None else "",
+                "created_at": note.created_at.isoformat(),
+                "updated_at": note.updated_at.isoformat(),
+            }
+        )
+    buffer.seek(0)
+    filename = f"verse-vault-notes-{datetime.now().strftime('%Y%m%d')}.csv"
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/import", response_model=NoteImportResponse)
+async def import_notes_csv(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> NoteImportResponse:
+    filename = (file.filename or "").lower()
+    if filename and not filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+
+    raw = await file.read()
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="CSV must be UTF-8 encoded",
+        ) from exc
+
+    reader = csv.DictReader(io.StringIO(text))
+    if reader.fieldnames is None:
+        raise HTTPException(status_code=400, detail="CSV has no header row")
+
+    normalized_headers = {
+        (name or "").strip().lower(): name for name in reader.fieldnames
+    }
+    required = {"title", "body", "scripture_reference"}
+    missing = required - set(normalized_headers)
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"CSV missing required columns: {', '.join(sorted(missing))}",
+        )
+
+    rows: list[dict[str, str]] = []
+    for raw_row in reader:
+        row = {
+            key: (raw_row.get(normalized_headers.get(key, key)) or "").strip()
+            for key in NOTE_CSV_HEADERS
+        }
+        if not any(row.values()):
+            continue
+        rows.append(row)
+
+    result = import_notes_from_rows(db, rows)
+    return NoteImportResponse(
+        added=result.added,
+        skipped=result.skipped,
+        errors=result.errors,
+    )
 
 
 @router.get("/matching-count", response_model=NoteMatchCountResponse)

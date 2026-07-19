@@ -50,7 +50,11 @@
         </nav>
       </section>
 
-      <section class="verse-panel">
+      <a
+        class="verse-panel"
+        href="/continue?book={{ page.verse_of_day.book_id }}&chapter={{ page.verse_of_day.chapter }}&verse={{ page.verse_of_day.verse }}"
+        aria-label="Open {{ page.verse_of_day.reference }} in reader"
+      >
         <h2 class="section-label">{{ page.verse_of_day.label }}</h2>
         <blockquote class="verse-quote">
           <p>&ldquo;{{ page.verse_of_day.text }}&rdquo;</p>
@@ -58,7 +62,7 @@
         <footer class="verse-citation">
           <cite>{{ page.verse_of_day.reference }}</cite>
         </footer>
-      </section>
+      </a>
     </main>
 
     <footer class="date-footer">

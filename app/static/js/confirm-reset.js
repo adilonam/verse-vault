@@ -44,10 +44,10 @@
               <path d="M3 3v5h5" />
             </svg>
           </span>
-          <h2 class="confirm-modal__title" id="confirm-reset-title">Reset reading progress</h2>
+          <h2 class="confirm-modal__title" id="confirm-reset-title">Reset reading position</h2>
         </header>
         <p class="confirm-modal__message" id="confirm-reset-message">
-          Reset reading progress? All chapter completion will be cleared.
+          Reset reading position? Continue will return to Genesis 1:1. Notes and progress are kept.
         </p>
         <div class="confirm-modal__actions">
           <button type="button" class="confirm-modal__cancel" id="confirm-reset-cancel">

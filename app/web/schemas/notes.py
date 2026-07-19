@@ -53,3 +53,9 @@ class NoteMatchCountResponse(BaseModel):
 
 class NoteMatchDeleteResponse(BaseModel):
     deleted: int
+
+
+class NoteImportResponse(BaseModel):
+    added: int
+    skipped: int
+    errors: int

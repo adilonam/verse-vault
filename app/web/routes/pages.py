@@ -7,7 +7,6 @@ from app.core.config import settings
 from app.db.base import get_db
 from app.db.bible import (
     book_exists,
-    get_bible_version,
     get_book_name,
     get_books,
     get_chapter_count,
@@ -30,6 +29,7 @@ from app.db.reading import (
     reset_reading,
     save_reading_progress,
 )
+from app.db.settings import get_active_bible_version
 from app.web.content.home import build_home_page
 
 router = APIRouter()
@@ -51,7 +51,7 @@ COLLECTION_COLOR_OPTIONS = [
 
 def _bible_version_or_500(db: Session):
     try:
-        return get_bible_version(db, settings.bible_version_id)
+        return get_active_bible_version(db)
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
@@ -61,7 +61,7 @@ async def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
     bible_version = _bible_version_or_500(db)
     position = get_reading_position(db)
     book_name = get_book_name(db, position.book_id)
-    progress_percent = get_overall_progress_percent(db)
+    progress_percent = get_overall_progress_percent(db, bible_version.table)
 
     page = build_home_page(
         db=db,
@@ -97,7 +97,7 @@ async def bible(
     if testament not in {"all", "old", "new"}:
         testament = "all"
 
-    progress = get_all_book_progress(db)
+    progress = get_all_book_progress(db, bible_version.table)
     books = get_books(
         db,
         bible_version.table,
