@@ -22,6 +22,30 @@
           class="search-input"
         />
       </label>
+      <div class="notes-toolbar__actions">
+        <a
+          href="/api/notes/export"
+          class="notes-toolbar__btn"
+          id="notes-export-btn"
+          download
+        >
+          Export
+        </a>
+        <button
+          type="button"
+          class="notes-toolbar__btn"
+          id="notes-import-btn"
+        >
+          Import
+        </button>
+        <input
+          type="file"
+          id="notes-import-file"
+          class="visually-hidden"
+          accept=".csv,text/csv"
+          tabindex="-1"
+        />
+      </div>
       <span class="notes-count">{{ note_count }} note{{ "s" if note_count != 1 else "" }}</span>
     </div>
 

@@ -3,6 +3,8 @@
   const countEl = document.querySelector(".notes-count");
   const searchInput = document.querySelector(".notes-toolbar .search-input");
   const emptyEl = document.querySelector(".notes-list__empty");
+  const importBtn = document.getElementById("notes-import-btn");
+  const importFile = document.getElementById("notes-import-file");
   if (!list) return;
 
   function updateCount(visible) {
@@ -34,6 +36,46 @@
 
   if (searchInput) {
     searchInput.addEventListener("input", filterNotes);
+  }
+
+  if (importBtn && importFile) {
+    importBtn.addEventListener("click", () => {
+      importFile.click();
+    });
+
+    importFile.addEventListener("change", async () => {
+      const file = importFile.files?.[0];
+      importFile.value = "";
+      if (!file) return;
+
+      importBtn.disabled = true;
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        const response = await fetch("/api/notes/import", {
+          method: "POST",
+          body,
+        });
+        if (!response.ok) {
+          const detail = await response.json().catch(() => null);
+          const message =
+            detail?.detail || "Import failed. Check the CSV and try again.";
+          window.alert(typeof message === "string" ? message : "Import failed.");
+          return;
+        }
+        const result = await response.json();
+        const parts = [`Added ${result.added}`, `skipped ${result.skipped}`];
+        if (result.errors) parts.push(`errors ${result.errors}`);
+        window.alert(`Import complete: ${parts.join(", ")}.`);
+        if (result.added > 0) {
+          window.location.reload();
+        }
+      } catch {
+        window.alert("Import failed. Check the CSV and try again.");
+      } finally {
+        importBtn.disabled = false;
+      }
+    });
   }
 
   list.addEventListener("click", async (event) => {

@@ -14,9 +14,11 @@ from app.db.models.bible import (
 from app.db.models.collections import Collection, CollectionNote, CollectionVerseRef
 from app.db.models.notes import Note
 from app.db.models.reading import BookProgress, ReadingPosition
+from app.db.models.settings import AppSettings
 from app.db.models.verse_refs import VerseRef
 
 __all__ = [
+    "AppSettings",
     "BibleVersionKey",
     "BookProgress",
     "Collection",

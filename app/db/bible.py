@@ -161,6 +161,14 @@ def get_total_verse_count(db: Session, version_table: str) -> int:
     return db.scalar(select(func.count()).select_from(verse_model)) or 0
 
 
+def get_verse_counts_by_book(db: Session, version_table: str) -> dict[int, int]:
+    verse_model = get_verse_model(version_table)
+    rows = db.execute(
+        select(verse_model.b, func.count()).group_by(verse_model.b)
+    ).all()
+    return {book_id: count for book_id, count in rows}
+
+
 def get_verse_by_global_index(
     db: Session,
     version_table: str,
@@ -183,8 +191,8 @@ def get_verse_by_global_index(
     )
 
 
-def get_verse_of_day(db: Session, version_table: str) -> tuple[str, str]:
-    """Return (text, reference) for today's verse.
+def get_verse_of_day(db: Session, version_table: str) -> tuple[GlobalVerse, str]:
+    """Return (verse, reference) for today's verse.
 
     index = (year * 10000 + month * 100 + day) % total_verse_count
     """
@@ -197,4 +205,4 @@ def get_verse_of_day(db: Session, version_table: str) -> tuple[str, str]:
     verse = get_verse_by_global_index(db, version_table, index)
     book_name = get_book_name(db, verse.book_id)
     reference = f"{book_name} {verse.chapter}:{verse.verse}"
-    return verse.text, reference
+    return verse, reference

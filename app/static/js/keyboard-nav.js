@@ -106,6 +106,21 @@
     return best;
   }
 
+  /** Home nav list: Up/Down stay in the column; Left/Right leave via spatial nav. */
+  function findNavListSibling(current, key) {
+    if (key !== "ArrowUp" && key !== "ArrowDown") return null;
+    if (!current || !current.classList || !current.classList.contains("nav-card")) {
+      return null;
+    }
+    const list = current.closest(".nav-list");
+    if (!list) return null;
+    const cards = Array.from(list.querySelectorAll(".nav-card")).filter(isVisible);
+    const index = cards.indexOf(current);
+    if (index < 0) return null;
+    if (key === "ArrowDown") return cards[index + 1] || null;
+    return cards[index - 1] || null;
+  }
+
   function isTextEntry(el) {
     if (!el || !el.tagName) return false;
     const tag = el.tagName;
@@ -253,9 +268,28 @@
     return false;
   }
 
+  // Hidden settings: Ctrl+Shift+B opens Bible version picker.
+  function handleBibleVersionSettings(event) {
+    if (
+      event.ctrlKey &&
+      event.shiftKey &&
+      !event.altKey &&
+      !event.metaKey &&
+      (event.key === "B" || event.key === "b")
+    ) {
+      event.preventDefault();
+      if (openModalRoot()) return true;
+      if (typeof window.openBibleVersionSettings !== "function") return true;
+      window.openBibleVersionSettings();
+      return true;
+    }
+    return false;
+  }
+
   function onKeydown(event) {
     if (event.defaultPrevented) return;
     if (handleHiddenReset(event)) return;
+    if (handleBibleVersionSettings(event)) return;
     if (event.altKey || event.ctrlKey || event.metaKey) return;
 
     const key = event.key;
@@ -322,12 +356,17 @@
     if (!current || current === document.body || !candidates.includes(current)) {
       event.preventDefault();
       const start = candidates[0];
-      const next = findInDirection(start, key, candidates) || start;
+      const next =
+        findNavListSibling(start, key) ||
+        findInDirection(start, key, candidates) ||
+        start;
       focusElement(next);
       return;
     }
 
-    const next = findInDirection(current, key, candidates);
+    const next =
+      findNavListSibling(current, key) ||
+      findInDirection(current, key, candidates);
     if (!next) return;
 
     event.preventDefault();

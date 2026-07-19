@@ -1,22 +1,14 @@
 from dataclasses import dataclass
 
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session
 
 from app.db.base import engine
-from app.db.bible import get_chapter_count, get_verse_count_in_chapter
+from app.db.bible import get_total_verse_count, get_verse_counts_by_book
 from app.db.models.reading import BookProgress, ReadingPosition
+from app.db.notes import count_unique_noted_verses, get_noted_verse_counts_by_book
 
 DEFAULT_POSITION = (45, 8, 1)
-
-SAMPLE_PROGRESS: dict[int, int] = {
-    1: 100,
-    2: 72,
-    19: 45,
-    40: 100,
-    44: 60,
-    66: 0,
-}
 
 
 @dataclass(frozen=True)
@@ -66,12 +58,6 @@ def init_reading_tables() -> None:
             book_id, chapter, verse = DEFAULT_POSITION
             db.add(ReadingPosition(id=1, book_id=book_id, chapter=chapter, verse=verse))
 
-        progress_count = db.scalar(select(func.count()).select_from(BookProgress)) or 0
-        if progress_count == 0:
-            db.add_all(
-                BookProgress(book_id=book_id, percent=percent)
-                for book_id, percent in SAMPLE_PROGRESS.items()
-            )
         db.commit()
 
 
@@ -105,25 +91,20 @@ def set_reading_position(db: Session, book_id: int, chapter: int, verse: int) ->
     db.commit()
 
 
+def _noted_percent(noted: int, total: int) -> int:
+    if total <= 0 or noted <= 0:
+        return 0
+    return min(100, max(1, round((noted / total) * 100)))
+
+
 def calculate_book_progress(
     db: Session,
     version_table: str,
     book_id: int,
-    chapter: int,
-    verse: int,
 ) -> int:
-    chapter_count = get_chapter_count(db, version_table, book_id)
-    if chapter_count == 0:
-        return 0
-
-    verses_in_chapter = get_verse_count_in_chapter(
-        db, version_table, book_id, chapter
-    )
-    if verses_in_chapter == 0:
-        verses_in_chapter = 1
-
-    progress_ratio = ((chapter - 1) + verse / verses_in_chapter) / chapter_count
-    return min(100, round(progress_ratio * 100))
+    totals = get_verse_counts_by_book(db, version_table)
+    noted = get_noted_verse_counts_by_book(db)
+    return _noted_percent(noted.get(book_id, 0), totals.get(book_id, 0))
 
 
 def save_reading_progress(
@@ -133,6 +114,7 @@ def save_reading_progress(
     chapter: int,
     verse: int,
 ) -> int:
+    """Save reading position; progress percent comes from noted verses."""
     position = db.get(ReadingPosition, 1)
     if position is None:
         db.add(ReadingPosition(id=1, book_id=book_id, chapter=chapter, verse=verse))
@@ -141,46 +123,57 @@ def save_reading_progress(
         position.chapter = chapter
         position.verse = verse
 
-    percent = calculate_book_progress(db, version_table, book_id, chapter, verse)
     progress = db.get(BookProgress, book_id)
     if progress is None:
         db.add(
             BookProgress(
                 book_id=book_id,
-                percent=percent,
+                percent=0,
                 last_chapter=chapter,
                 last_verse=verse,
             )
         )
     else:
-        progress.percent = percent
         progress.last_chapter = chapter
         progress.last_verse = verse
 
     db.commit()
-    return percent
+    return calculate_book_progress(db, version_table, book_id)
 
 
-def get_all_book_progress(db: Session) -> dict[int, BookProgressData]:
+def get_all_book_progress(
+    db: Session,
+    version_table: str,
+) -> dict[int, BookProgressData]:
     rows = db.scalars(select(BookProgress)).all()
+    last_positions = {
+        row.book_id: (row.last_chapter, row.last_verse) for row in rows
+    }
+    totals = get_verse_counts_by_book(db, version_table)
+    noted = get_noted_verse_counts_by_book(db)
+
+    book_ids = set(totals) | set(last_positions) | set(noted)
     return {
-        row.book_id: BookProgressData(
-            percent=row.percent,
-            last_chapter=row.last_chapter,
-            last_verse=row.last_verse,
+        book_id: BookProgressData(
+            percent=_noted_percent(noted.get(book_id, 0), totals.get(book_id, 0)),
+            last_chapter=last_positions.get(book_id, (1, 1))[0],
+            last_verse=last_positions.get(book_id, (1, 1))[1],
         )
-        for row in rows
+        for book_id in book_ids
     }
 
 
-def get_book_progress(db: Session) -> dict[int, int]:
-    return {book_id: data.percent for book_id, data in get_all_book_progress(db).items()}
+def get_book_progress(db: Session, version_table: str) -> dict[int, int]:
+    return {
+        book_id: data.percent
+        for book_id, data in get_all_book_progress(db, version_table).items()
+    }
 
 
-def get_overall_progress_percent(db: Session) -> int:
-    progress = get_book_progress(db)
-    total = sum(progress.get(book_id, 0) for book_id in range(1, 67))
-    return round(total / 66)
+def get_overall_progress_percent(db: Session, version_table: str) -> int:
+    total = get_total_verse_count(db, version_table)
+    noted = count_unique_noted_verses(db)
+    return _noted_percent(noted, total)
 
 
 def reset_reading(db: Session) -> None:
